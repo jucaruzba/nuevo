@@ -1,0 +1,40 @@
+ion-content{
+    --background: url('../../../assets/img/fondo.png') 0 0/100% 100% no-repeat
+ }
+
+ #titulo{
+
+    font-family: copperplate;
+   font-weight: 1000px!important;
+    font-size: 5vh;
+    font-weight: 1000;
+    text-align: center;
+    color:#3d2304;
+    margin-top: 25px;
+    margin-block-end: -10px;
+}
+
+#titulocard{
+
+    font-family: copperplate;
+    font-weight: 1000px!important;
+     font-size: 5vh;
+     font-weight: 1000;
+     text-align: center;
+     color:#3d2304;
+     border: 100px;
+}
+#cardpersonaje{
+    box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px, rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
+    margin: 4vh;
+    margin-top: 5vh;
+    background-color: rgba(245, 245, 245, 1);
+    opacity: 1;
+    border-radius: 20px;
+}
+#imagen{
+margin: auto;
+display: block;
+height: 30vh;
+width: 20vh;
+}

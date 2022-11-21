@@ -1,0 +1,13 @@
+<ion-content>
+<h1 id="titulo">PERSONAJES</h1>
+
+<ion-card  id="cardpersonaje" *ngFor="let personaje of  personajesRecientes"
+(click)="verPersonajes(personaje.id)" >
+  <img id="imagen" alt="Silhouette of mountains" [src]="personaje.img"/>
+  <ion-card-header>
+    <ion-card-title id="titulocard">{{personaje.nombre}}</ion-card-title>
+  </ion-card-header>
+</ion-card>
+</ion-content>
+
+<app-header></app-header>

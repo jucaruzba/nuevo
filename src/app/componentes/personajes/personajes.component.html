@@ -1,0 +1,15 @@
+      <ion-content>
+        <ion-card id="card" >
+          <img id="imagen" alt="Silhouette of mountains" [src]="personajeDatos.img"/>
+          <ion-card-header>
+            <ion-card-title  id="titulocard">{{personajeDatos.nombre}}</ion-card-title>
+            <ion-card-subtitle id="subcard">{{personajeDatos.tipo}}</ion-card-subtitle>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-label id="proce"><strong>Procedencia: </strong>{{personajeDatos.procedencia}} <br></ion-label> 
+            <ion-label></ion-label>
+            <ion-label id="texto"><strong>Descripción: </strong>{{personajeDatos.descripcion}}</ion-label>
+          </ion-card-content>
+          <button (click)="regresar()"  class="button-74" role="button">Regresar</button>
+        </ion-card>
+      </ion-content>
