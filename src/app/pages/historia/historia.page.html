@@ -1,90 +1,120 @@
 <ion-content>
-  <ion-grid>
-    <ion-row>
-      <ion-col>
-        <h1 id="titulo">HISTORIA</h1>
-        <p id="texto">
-          En el juego del amor salir victorioso siempre es difícil, muchas veces tienes que vencer a los enemigos para llegar a conquistar a la princesa de tu vida…
-        </p>
-      </ion-col>
-      <ion-col>
-        <img id="imagen" alt="Silhouette of mountains" src="../../../assets/img/history_4.png" />
-      </ion-col>
-    </ion-row>
-    <ion-row>
-      <ion-col id="text1">
-        <p id="texto">
-           Erase una vez un joven noble quien no tenía mucha reputación en la aldea java, ese joven llamado charlies era el hijo de un hombre encargado de dar mantenimiento a los compiladores de android studio, todos dentro de la aldea java se encargaban de mantener y ayudar a la construcción del sistema android.
-          La familia real era dueña de internet,  solo tenían una hija era la hermosa princesa vidalia, un dia los malwares de internet comandados por el rey de los bugs “Serches” tiraron todo el internet, se apoderaron el castillo real y secuestraron a vidalia dentro del castillo.
-          Todo internet estaba muerto, encadenados a sufrir de malwares, nadie podía contra Serches y sus secuaces, la mayoría de las aldeas empezaron a ser destruidas por los malwares, sin embargo la aldea java aún no era conquistada.
-          Charlies logró escapar de los malwares y se escondió en el bosque, jamás en su vida había hecho algo, nunca había logrado nada en su aldea y nadie tenía esperanzas en él.
-          Por la noche charlie subió a un árbol y desde ahí miro el castillo a lo lejos, nunca pensó en ir a rescatar a la princesa ya que no tenía confianza en sí mismo, en la madrugada un ruido despertó a charlies , no veía a nada, ni a nadie,         
-          cuando de repente se le aparece un mago del wifi (El mago del wifi era el encargado de controlar las conecciones de todos los dispositivos), charlies sorprendido comenzó a gritar de pánico, el mago le cerró la boca y le dijo:
-            
-</p>
-      </ion-col>
-    </ion-row>
+<ion-slides pager  [options]="opcionesSlide">
+  <ion-slide>
+    <ion-card id="card">
+      <img id="imagen" alt="Silhouette of mountains" src="../../../assets/img/historia_1.png" />
+      <ion-card-header>
+        <ion-card-title id="titulocard">THE CHARLIES AT ADVENTURE</ion-card-title>
+        <ion-card-subtitle id="subcard">Una Historia de Amor y Aventura</ion-card-subtitle>
+      </ion-card-header >
+      <ion-card-content id="texto">
+        En el juego del amor salir victorioso siempre es difícil, muchas veces tienes que vencer a los enemigos para llegar a conquistar a la princesa de tu vida…
+        Erase una vez un joven noble quien no tenía mucha reputación en la aldea java, ese joven llamado charlies era el hijo de un hombre encargado de dar mantenimiento a los compiladores de android studio, todos dentro de la aldea java se encargaban de mantener y ayudar a la construcción del sistema android.
+        <br> La familia real era dueña de internet,  solo tenían una hija era la hermosa princesa vidalia, un dia los malwares de internet comandados por el rey de los bugs “Serches” tiraron todo el internet, se apoderaron el castillo real y secuestraron a vidalia dentro del castillo.
+      </ion-card-content>
+    </ion-card>
+  </ion-slide>
 
-    <ion-row>
-      <ion-col>
-        <img id="imagen2" alt="Silhouette of mountains" src="../../../assets/img/history_3.png" />
-      </ion-col>
-      <ion-col id="text2">
-        <p id="texto">
+  <ion-slide>
+    <ion-card id="card">
+      <ion-card-header>
+        <ion-card-title id="titulocard">CHARLIES Y EL MAGO</ion-card-title>
+        <ion-card-subtitle id="subcard">Encuentro con el Mago</ion-card-subtitle>
+      </ion-card-header>
+    
+      <ion-card-content id="texto">
+        Todo internet estaba muerto, encadenados a sufrir de malwares, nadie podía contra Serches y sus secuaces, la mayoría de las aldeas empezaron a ser destruidas por los malwares, sin embargo la aldea java aún no era conquistada.
+        Charlies logró escapar de los malwares y se escondió en el bosque, jamás en su vida había hecho algo, nunca había logrado nada en su aldea y nadie tenía esperanzas en él.
+        Por la noche charlie subió a un árbol y desde ahí miro el castillo a lo lejos, nunca pensó en ir a rescatar a la princesa ya que no tenía confianza en sí mismo, en la madrugada un ruido despertó a charlies , no veía a nada, ni a nadie, cuando de repente se le aparece un mago del wifi (El mago del wifi era el encargado de controlar las conecciones de todos los dispositivos), charlies sorprendido comenzó a gritar de pánico, el mago le cerró la boca y le dijo:
+        <br>
+        <br>
+        <strong> Mago:</strong> Charlies eres el único en todo internet que no está esclavo de los malwares.
+        <br>
+        <br>
+         <strong>Charlies:</strong> Si… Yo solo estaba huyendo de todo y tengo mucho miedo.
+      </ion-card-content>
+    </ion-card>
+  </ion-slide>
 
-        <strong>Mago: </strong> Charlies eres el único en todo internet que no está esclavo de los malwares.
-        <br><strong>Charlies: </strong>  Charlies: Si… Yo solo estaba huyendo de todo y tengo mucho miedo.
-        <br><strong>Mago: </strong>   Internet te necesita, tienes que ir al castillo y rescatar a la princesa vidalia.
-        <br> <strong>Charlies:</strong> Yo no puedo hacer eso, nunca he hecho nada en mi vida y no podría lograrlo.
-     </p>
-      </ion-col>
-    </ion-row>
-    <ion-row>
-      <ion-col id="text1">
-        <p id="texto">
+  <ion-slide>
+    <ion-card id="card">
+      <ion-card-content id="texto">
+        <strong> Mago:</strong> Internet te necesita, tienes que ir al castillo y rescatar a la princesa vidalia.
+        <br>
+        <br>
+         <strong>Charlies:</strong> Yo no puedo hacer eso, nunca he hecho nada en mi vida y no podría lograrlo.
+        <br>
+        <br>
         El mago insistió por mucho tiempo y logró convencer a charlies.
         Antes de emprender el rescate Charlies tenía que hacer un plan, porque se iba a enfrentar a un camino duro y difícil que ni siquiera conocía.
-
+        <br>
+        <br>
+        <img id="imagen" alt="Silhouette of mountains" src="../../../assets/img/historia_2.png" />
+        <br>
         El plan era fácil para muchos pero realmente difícil para Charlies, sin embargo charlies salió con ansias a enfrentar todo el camino…
         Para llegar a la meta charlie tenía que pasar por 1 parte principal de internet
         -Facebook : Era la aldea donde se mantenía todo facebook y estaba contaminada por los malwares, Charlies tenía que matar a todos los malwares y restaurar facebook.
+      </ion-card-content>
+
+    </ion-card>
+  </ion-slide>
+
+  <ion-slide>
+    <ion-card id="card">
+      <ion-card-header>
+        <ion-card-title id="titulocard">CHARLIES EN LA ALDEA FACEBOOK</ion-card-title>
+        <ion-card-subtitle id="subcard">Haciendo una publicacion</ion-card-subtitle>
+      </ion-card-header>
+    
+      <ion-card-content id="texto">
         La aldea Facebook era el camino más corto para llegar al castillo y rescatar a la princesa.
-
+        <br>
+        <br>
         -El castillo: Aquí vivía la familia real y tendría que rescatar a la princesa vidalia, pero antes tendría que derrotar a todos los secuaces de Serches y pelear contra el.
-
+        <br>
+        <br>
         Charlies comenzaba el camino llegando a la aldea de facebook, la aldea estaba destruida, no había ningún noble por las calles y lo que tenía que hacer charlies era llegar a la casa principal de la aldea y postear una publicación.
-        Charlies comenzó peleando contra un malware y logró ganarle, sin embargo volvió a esconderse y tenía miedo de salir, tenía que llegar lo antes posible al castillo, el plan de Charlie era simple: llegar a la casa principal y postear una publicación, Charlie iba a distraer a todos los malwares cercanos para poder llegar a la casa principal, entonces Charlie tomó su celular y se dio cuenta que en facebook lo unico que podia hacer era hacer lives, se acordó que era moderador de una página del castillo, ya que días atrás había hecho unos diseños para la casa real, asi que comenzo un live al centro de la plaza de la aldea facebook, logró llamar toda la atención de los malwares cercas y ellos comenzaron a buscarlo, Charlies logró entrar a la casa principal y realizó la publicación que hizo que facebook volviera a funcionar.
+        Charlies comenzó peleando contra un malware y logró ganarle, sin embargo volvió a esconderse y tenía miedo de salir, tenía que llegar lo antes posible al castillo, el plan de Charlie era simple:
+        <br>
+        Llegar a la casa principal y postear una publicación, Charlie iba a distraer a todos los malwares cercanos para poder llegar a la casa principal, entonces Charlie tomó su celular y se dio cuenta que en facebook lo unico que podia hacer era hacer lives, se acordó que era moderador de una página del castillo.
+      </ion-card-content>
+    </ion-card>
+  </ion-slide>
+           
+  <ion-slide>
+    <ion-card id="card">
+      <ion-card-content id="texto">
+       Dias atrás había hecho unos diseños para la casa real, asi que comenzo un live al centro de la plaza de la aldea facebook, logró llamar toda la atención de los malwares cercas y ellos comenzaron a buscarlo, Charlies logró entrar a la casa principal y realizó la publicación que hizo que facebook volviera a funcionar.
+        <br>
+        <br>
+        <img id="imagen" alt="Silhouette of mountains" src="../../../assets/img/historia_3.png" />
+        <br>
+        <br>
+        Charlies salió corriendo de la aldea Facebook logrando llegar al camino que lo conducirá al castillo, Charlies llegó al castillo y se encontró con la realidad, todo estaba lleno de secuaces de Serches, que buscaban dominar todo internet.
+        <br>
+        <br>
+        El plan de Charlies para rescatar a la princesa era derrotar a todos los secuaces de serches y llegar a la habitación secreta para rescatar a la princesa que estaba secuestrada en el castillo.
+        <br>
+        <br>
+     
+      </ion-card-content>
 
-       </p>
-      </ion-col>
-    </ion-row>
-    <ion-row>
-      <ion-col id="text3">
-        <p id="texto">
-          Charlies salió corriendo de la aldea Facebook logrando llegar al camino que lo conducirá al castillo, Charlies llegó al castillo y se encontró con la realidad, todo estaba lleno de secuaces de Serches, que buscaban dominar todo internet.
-        </p>
-      </ion-col>
-      <ion-col>
-        <img id="imagen3" alt="Silhouette of mountains" src="../../../assets/img/history_5.png" />
-      </ion-col>
-    </ion-row>
-    <ion-row>
-      <ion-col id="text1">
-        <p id="texto">
-          El plan de Charlies para rescatar a la princesa era derrotar a todos los secuaces de serches y llegar a la habitación secreta para rescatar a la princesa que estaba secuestrada en el castillo. 
-</p>
-      </ion-col>
-    </ion-row>
-    <ion-row>
-      <ion-col>
-        <img id="imagen4" alt="Silhouette of mountains" src="../../../assets/img/history_2.png" />
-        <p id="texto">
-          El mago le regalo a Charlies un mapa del castillo, Charlies comenzó el recorrido entrando por un túnel al castillo, llegó y comenzó a  seguir el mapa logrando llegar a la habitación secreta y para lograr lo inesperado tuvo que matar a searches, logró restaurar todo internet y se convirtió en el enamorado de la princesa.
-            
-        </p>
-      </ion-col>
-    </ion-row>
-  </ion-grid>
+    </ion-card>
+  </ion-slide>
+
+  <ion-slide>
+    <ion-card id="card">
+      <ion-card-content id="texto">
+        El mago le regalo a Charlies un mapa del castillo, Charlies comenzó el recorrido entrando por un túnel al castillo, llegó y comenzó a  seguir el mapa logrando llegar a la habitación secreta y para lograr lo inesperado tuvo que matar a searches, logró restaurar todo internet y se convirtió en el enamorado de la princesa.
+        <br>
+        <br>
+        <img id="imagen" alt="Silhouette of mountains" src="../../../assets/img/final.png" />
+      </ion-card-content>
+
+    </ion-card>
+  </ion-slide>
+
+</ion-slides>
 </ion-content>
 <app-header>
 </app-header>

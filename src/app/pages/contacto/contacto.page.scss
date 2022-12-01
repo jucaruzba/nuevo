@@ -1,7 +1,12 @@
 ion-content{
-    --background: url('../../../assets/img/fondo.png') 0 0/100% 100% no-repeat
- }
- 
+  --background: url('../../../assets/img/BG.png') 0 0/100% 100% no-repeat
+}
+
+
+#body{
+
+  background: rgba(32, 239, 180, 0.5);
+}
  #titulo{
 
     font-family: copperplate;
@@ -11,82 +16,47 @@ ion-content{
     text-align: center;
     color:#3d2304;
     margin-top: 5vh;
-    margin-block-end: -10px;
+    margin-block-end: -5px;
 }
 
-#formulario{
-
-    margin: 2vh;
-    padding: 2vh;
-    background-color:#5c493d;
+#card{
+    margin: 4vh;
+    margin-top: 3vh;
+    background-color: rgba(245, 245, 245, 1);
+    opacity: 1;
     border-radius: 20px;
-}
-#form1{
-    padding: 1vh;
-    margin-block-end: 5vh;
-}
-#form2{
-    margin-block-end: 5vh;
-}
-#form3{
-    margin-block-end: 2vh;
-}
-
-
-
-/* CSS */
-.button-74 {
-  background-color: #fbeee0;
-  border: 2px solid #422800;
-  border-radius: 30px;
-  box-shadow: #422800 4px 4px 0 0;
-  color: #422800;
-  cursor: pointer;
-  display: inline-block;
-  font-weight: 600;
-  font-size: 18px;
-  padding: 0 18px;
-  line-height: 50px;
-  text-align: center;
-  text-decoration: none;
-  user-select: none;
-  -webkit-user-select: none;
-  touch-action: manipulation;
-  margin-left: 27vh;
-}
-
-.button-74:hover {
-  background-color: #fff;
-}
-
-.button-74:active {
-  box-shadow: #422800 2px 2px 0 0;
-  transform: translate(2px, 2px);
-}
-
-@media (min-width: 768px) {
-  .button-74 {
-    min-width: 120px;
-    padding: 0 25px;
-  }
+    box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px, rgba(0, 0, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
+  
 }
 
 #titulo2{
 
     font-family: copperplate;
    font-weight: 1000px!important;
-    font-size: 5vh;
+    font-size: 4vh;
     font-weight: 1000;
     text-align: center;
     color:#3d2304;
-    margin-top: 6vh;
 
 }
 #texto{
 
-    padding: 2vh;
     text-align: justify;
     font-size: 2.3vh;
     color:#3d2304;
-    font-family:cursive ;
+    font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+#texto2{
+
+  padding: 2vh;
+  text-align: justify;
+  font-size: 2.3vh;
+  color:#3d2304;
+  font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+#texto3{
+  text-align:center;
+  font-size: 2.3vh;
+  color:#3d2304;
+  font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
 }

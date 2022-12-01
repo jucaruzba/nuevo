@@ -1,35 +1,35 @@
 ion-content{
-   --background: url('../../../assets/img/fondo.png') 0 0/100% 100% no-repeat
+    --background: url('../../../assets/img/BG.png') 0 0/100% 100% no-repeat
+ }
+ 
+ 
+ #body{
+
+    background: rgba(32, 239, 180, 0.5);
 }
-
-
-
-#principal{
-margin-top: 15px;
-margin-block-end: -50px;
-}
-#texto{
-
-    padding: 2.5vh;
-    text-align: justify;
-    font-size: 2.3vh;
-    color:#3d2304;
-    font-family:cursive ;
-}
-
-#titulo{
-
-    font-family: copperplate;
-   font-weight: 1000px!important;
-    font-size: 5vh;
-    font-weight: 1000;
-    text-align: center;
-    color:#3d2304;
-    margin-top: 35px;
-    margin-block-end: -10px;
-}
-
-#body{
-
-    background: rgba(166, 205, 227, 0.5);
-}
+ #principal{
+    margin-top: -1vh;
+ margin-block-end: -65px;
+ }
+ #texto{
+ 
+     padding: 2vh;
+     text-align: justify;
+     font-size: 2.5vh;
+     color:#3d2304;
+     font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+ }
+ 
+ #titulo{
+ 
+     font-family: copperplate;
+    font-weight: 1000px!important;
+     font-size: 5vh;
+     font-weight: 1000;
+     text-align: center;
+     color:#3d2304;
+     margin-top: 52px;
+     margin-block-end: -10px;
+ }
+ 
+ 

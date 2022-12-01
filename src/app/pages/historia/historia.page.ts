@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
+import { IonSlide } from '@ionic/angular';
 
 @Component({
   selector: 'app-historia',
@@ -7,9 +8,15 @@ import { Component, OnInit } from '@angular/core';
 })
 export class HistoriaPage implements OnInit {
 
+  opcionesSlide={
+    loop:true,
+ 
+  }
   constructor() { }
 
   ngOnInit() {
   }
+
+
 
 }

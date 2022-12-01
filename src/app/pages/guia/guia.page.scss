@@ -1,6 +1,12 @@
 ion-content{
-    --background: url('../../../assets/img/fondo.png') 0 0/100% 100% no-repeat
+    --background: url('../../../assets/img/BG.png') 0 0/100% 100% no-repeat
  }
+ 
+ 
+ #body{
+
+    background: rgba(32, 239, 180, 0.5);
+}
  #titulo{
 
     font-family: copperplate;
@@ -13,21 +19,21 @@ ion-content{
     margin-block-end: -10px;
 }
 #texto{
-    margin-left: 1vh;
-    padding: 1vh;
+    margin-top: -1vh;
+    padding: 2vh;
     text-align: justify;
     font-size: 2.3vh;
     color:#3d2304;
-    font-family:cursive ;
+    font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}
+#center{
+    text-align: center;
 }
 
 #imagen{
 
-    margin-top: 3.5vh;
-    height: 30vh;
-    width: 30vh;
-}
-#text1{
+    border-radius: 20px;
+    margin: auto;
+    display: block;
     padding: 1vh;
-    margin-top: -7.5vh;
 }
