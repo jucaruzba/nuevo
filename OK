@@ -89,3 +89,67 @@ int enviaMensajePrevalidador(int iNewsockfd,int iPreval,int iNumero, char *cNume
   fprintf(fptr1,"Fin %s result=%d\n",pFuncion,iResult);
   fflush(fptr1);
 }
+
+
+
+int leePrevalidadoresCNF(void)
+{
+   int  i=0,
+	    iCountPreval=0,
+	    iResult=1,
+	    iSizeof=200;
+   char cArchivo[]="Prevalidadores.cnf",
+        pArchivo[1024], /*export PREVALIDADOREScnf=Prevalidadores.cnf*/
+        *pDIR_PROG=0,
+	    cMode[]="r",
+        pFuncion[]="leePrevalidadoresCNF",
+        pLinea[1024]="";
+   char slHostName[ 100 + 1 ] = "";
+   FILE *fIN;
+
+   fprintf(fptr1,"\nInicia %s\n",pFuncion);
+   if((pDIR_PROG = getenv("DIR_PROG")) == NULL)
+   {
+       fprintf(fptr1,"\n%s No se puede obtener la variable de ambiente DIR_PROG\n",pFuncion);
+       exit(1);
+   }
+   sprintf(pArchivo,"%s/%s",pDIR_PROG,cArchivo);
+   pArchivo[strlen(pArchivo)]=0;
+   if((fIN = fopen(pArchivo,cMode)) == NULL)
+   {
+      fprintf(fptr1,"%s No se pudo abrir el archivo[%s] mode=%s\n", pFuncion, pArchivo,cMode);
+      return iResult;
+   }
+   fprintf(fptr1,"\n%s Archivo[%s] cMode=%s\n\n", pFuncion, pArchivo,cMode);
+   memset( slHostName, '\0', sizeof( slHostName ) );
+   if ( gethostname( slHostName, 100 ) )
+   {
+    fprintf( fptr1, "%s No se pudo obtener el nombre del host, R=%d\n"
+      , pFuncion, errno );
+    return iResult;
+   }
+   /* Quitarle el dominio al nombre */
+   if ( strchr( slHostName, (int)'.' ) != NULL )
+   {
+    *(strchr( slHostName, (int)'.' )) = '\0';
+   }
+   
+   fprintf(fptr1,"%s gethostname{ %s }\n",pFuncion, slHostName );
+   fprintf( fptr1, "Ok" );
+   for (i=0; i<_MAX_PREVALIDADORES ; i++) tPreval[i][0]=0;
+   i=0;
+   while( (fgets (pLinea, iSizeof, fIN) != NULL) )
+   {
+     if( strstr( pLinea, slHostName ) == NULL ) continue;
+     iCountPreval++;
+     pLinea[iSizeof]=0;
+     fprintf( fptr1, "%s Prevalidador%d: %s\n"
+       , slHostName, iCountPreval, pLinea );
+     strcpy(tPreval[iCountPreval],pLinea);
+   }
+   fclose(fIN);
+   if(iCountPreval) iResult=0;
+   sprintf(tPreval[0],"%d",iCountPreval);
+   fprintf(fptr1,"%s %d-%s registros leidos result=%d\n",pFuncion,iCountPreval,tPreval[0],iResult);
+   return iResult;
+}
