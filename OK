@@ -1,0 +1,91 @@
+int enviaMensajePrevalidador(int iNewsockfd,int iPreval,int iNumero, char *cNumero,int iIndAcuse,char *cMsgError)
+{
+  char cBYTE[3]="",
+       cXinvertido[8]="",
+       cXnumero[8]="",
+       pFuncion[]="enviaMensajePrevalidador";
+  int  i=0,
+	   iBytes=2,
+       iLimite=4,
+	   iResult=0,
+       j=0;
+
+  fprintf(fptr1,"\nInicia %s(%d,%d,%d ,%s,%d,%s)\n"
+               ,pFuncion,iNewsockfd,iPreval,iNumero,cNumero,iIndAcuse,cMsgError);
+  fflush(fptr1);
+  switch (iPreval) {
+    case 4:
+	  switch (iIndAcuse) {
+        case 2:
+          fprintf(fptr1, "\n Se enviara primer acuse a CINTESIS %d", iNumero);
+          fflush(fptr1);
+          iResult=write(iNewsockfd,cNumero,sizeof(cNumero));
+          fprintf(fptr1, "\n Se envio primer acuse a CINTESIS %d", iNumero);
+          fflush(fptr1);
+          break;
+        default:
+          fprintf(fptr1,"\n [CINTESIS]: Error a enviar <%s>\n", cNumero);
+          fflush(fptr1);
+          iResult=write(iNewsockfd,cNumero,sizeof(cNumero));
+          break;
+      }
+      break;
+    default:
+      sprintf(cXnumero, "%08X", iNumero);
+      fprintf(fptr1,"EL NUMERO[%d] CONVERTIDO A HEXADECIMAL ES[%s]\n",iNumero,cXnumero);
+      fflush(fptr1);
+      cXnumero[8] = 0;
+      j=6;
+      fprintf(fptr1,"BYTE{");
+      for (i=iLimite-1;i>=0;i--)
+      {
+        cBYTE[0]=0;
+        strncpy(cBYTE, cXnumero+j, iBytes);
+        cBYTE[iBytes]=0;
+        fprintf(fptr1,"%d.%d.%s,",i,j,cBYTE);
+  	    fflush(fptr1);
+        strcat(cXinvertido,cBYTE);
+        j-=2;
+      }
+      cXinvertido[8]=0;
+      fprintf(fptr1,"} Convert(%s, 16)",cXinvertido);
+      iResult = Convert(cXinvertido, 16);
+      fprintf(fptr1," iResult=%d\n",iResult);
+      fflush(fptr1);
+      switch (iIndAcuse) {
+        case 0:
+          fprintf(fptr1,"SE ENVIA ERROR <%d> CONVERTIDO EN FORMATO RED <%d>\n", iNumero, iResult);
+          fflush(fptr1);
+          break;
+        case 2:
+          fprintf(fptr1,"SE ENVIA PRIMER ACUSE <%d> CONVERTIDO EN FORMATO RED <%d>\n", iNumero, iResult);
+          fflush(fptr1);
+          break;
+        default:
+          fprintf(fptr1,"SE ENVIA ACUSE CON ERROR <%d> CONVERTIDO EN FORMATO RED <%d>\n", iNumero, iResult);
+          fflush(fptr1);
+       break;
+      }
+      if (sizeof(iResult) > 0) {
+//Envia Mensaje de error a CAAAREM
+	    fprintf(fptr1,"write(%d,%d,%d)",iNewsockfd,iResult,sizeof(iResult));
+      	fflush(fptr1);
+      	iResult = write(iNewsockfd,&iResult,sizeof(iResult));
+		fprintf(fptr1," result=%d\n",iResult);
+      	fflush(fptr1);
+	  }
+      else {
+      	fprintf(fptr1,"[ABSsrvr] Error: No permite escribir en el socket.");
+      	fflush(fptr1);
+      }
+      //if(strcmp(cMsgError,"NUL0"))
+      //{
+        fprintf(fptr1,"ABSsrvr: %s.\n",cMsgError);
+   	    fflush(fptr1);
+      //}
+      break;
+  }
+  iResult = (iResult>0) ? 0 : 1;
+  fprintf(fptr1,"Fin %s result=%d\n",pFuncion,iResult);
+  fflush(fptr1);
+}
