@@ -1,45 +1,316 @@
-DIR_UTIL=/planics1/procesos/soptec/util
-export DIR_UTIL
-#Valida existencia y permisos de ejecucion del shell encab_ini.sh
-if [ ! -x ${DIR_UTIL}/encab_ini.sh ] ; then
- echo "NO existe encab_ini.sh, el proceso NO puede continuar"
- exit 1
-fi
-. $DIR_UTIL/encab_ini.sh $0_"`hostname`" "Inicializar el proceso shl_ABSsrvr.sh" ABSsrvr
+#ifdef __AMX_07_00087_0A_1
+      if ( (result=write (sockfd_CAAAREM, EnviaTrama20, 20)) < 0 )
+      {
+        iIndAlterno=1;
+        fprintf(fptr1,"[LlamaCAAAREM] Error 5: No se escribio el nombre del archivo[%s] -write- HOST[%s] Puerto[%d] Alterno=%d result=%d\n"
+	                 ,EnviaTrama20,strDireccion,serv_tcp_caaarem,iIndAlterno,result);
+        fflush(fptr1);
+	    renombrarArchivoS(EnviaTrama20,fptr1);
+		close(sockfd_CAAAREM);
+	    return 1;
+      }
+#else
+      write (sockfd_CAAAREM, EnviaTrama20, 20);
+#endif
+  LeeCabecera(EnviaTrama20, olEsNoPedimento, charEnviosI);
+  EnviosI = atoi(charEnviosI);
+#ifdef __DEBUG_1
+  fprintf(fptr1,"1.EnviosI=%d\n",EnviosI);
+  fflush(fptr1);
+#endif
+  sprintf(nombreArchivo, "%s", EnviaTrama20);
+#ifdef __DEBUG_1
+  fprintf(fptr1,"2.LetraArchivo(%s)\n",nombreArchivo);
+  fflush(fptr1);
+#endif
+
+  if (LetraArchivo(nombreArchivo, olEsNoPedimento) == 0)
+  {
+   if (!olEsNoPedimento)
+    nombreArchivo[0] = 'a';
+   else
+    nombreArchivo[0] = 'j';
+  }
+  else 
+  {
+	  if(!olEsNoPedimento)
+    nombreArchivo[0] = 'A';
+   else
+    nombreArchivo[0] = 'J';
+  }
+  nombreArchivo[12] = '\0';
+
+  fprintf(fptr1,"Archivo a enviar <%s>\n", nombreArchivo);
+  EnviaTramanl = TamArchivo(nombreArchivo);
+#ifdef __DEBUG_1
+  fprintf(fptr1,"3.%d=TamArchivo(%s)\n",EnviaTramanl,nombreArchivo);
+  fflush(fptr1);
+#endif
+  EnviaTramanlhtonl = htonl(EnviaTramanl);
+  fprintf(fptr1,"\n Entero a enviar <%d> \n", EnviaTramanl);
+#ifdef __AMX_07_00087_0A_1
+  if ( !EnviaTramanl )
+  {
+    iIndAlterno=1;
+    fprintf(fptr1,"[LlamaCAAAREM] Error 6: Falla Tamanio %d del Archivo[%s] -TamArchivo- HOST[%s] Puerto[%d] Alterno=%d result=%d\n"
+	             ,EnviaTramanl,EnviaTrama20,strDireccion,serv_tcp_caaarem,iIndAlterno,result);
+    fflush(fptr1);
+	renombrarArchivoS(EnviaTrama20,fptr1);
+	close(sockfd_CAAAREM);
+	return 1;
+  }
+#endif
+/**
+  sprintf(xnumero, "%08X", EnviaTramanl);
+  xnumero[8] = '\0';
+
+  fprintf(fptr1,"EL NUMERO %d CONVERTIDO EN HEXADECIMAL ES %s\n", EnviaTramanl, xnumero);
+
+  strncpy(byte1, xnumero, 2);
+  byte1[2] = '\0';
+  fprintf(fptr1,"BYTE1[%s]\n", byte1);
+
+  strncpy(byte2, xnumero +2, 2);
+  byte2[2] = '\0';
+  fprintf(fptr1,"BYTE2[%s]\n", byte2);
+
+  strncpy(byte3, xnumero + 4, 2);
+  byte3[2] = '\0';
+  fprintf(fptr1,"BYTE3[%s]\n", byte3);
+
+  strncpy(byte4, xnumero  + 6 , 2);
+  byte4[2] = '\0';
+  fprintf(fptr1,"BYTE4[%s]\n", byte4);
+
+  sprintf(xinvertido, "%s%s%s%s", byte4, byte3, byte2, byte1);
+  xinvertido[8] = '\0';
+
+  resultado = Convert(xinvertido, 16);
+
+  fprintf(fptr1,"SE ENVIA ENTERO <%d> CONVERTIDO EN FORMATO RED <%d>\n", EnviaTramanl, resultado);
+**/
+  fprintf(fptr1,"\n sizeof EnviaTramanlhtonl <%d>  RED <%ld>", EnviaTramanl, sizeof(EnviaTramanlhtonl));
+
+#ifdef __AMX_07_00087_0A_1
+  if ( (result = write(sockfd_CAAAREM, &EnviaTramanlhtonl, sizeof(EnviaTramanlhtonl))) < 0)
+  {
+    iIndAlterno=1;
+    fprintf(fptr1,"[LlamaCAAAREM] Error 7: Archivo[%s] No se escribio la longitud del pedimento -write- HOST[%s] Puerto[%d] Alterno=%d result=%d\n"
+	             ,EnviaTrama20,strDireccion,serv_tcp_caaarem,iIndAlterno,result);
+    fflush(fptr1);
+	renombrarArchivoS(EnviaTrama20,fptr1);
+	close(sockfd_CAAAREM);
+	return 1;
+  }
+#else
+  result = write(sockfd_CAAAREM, &EnviaTramanlhtonl, sizeof(EnviaTramanlhtonl));
+/**
+  result = write(sockfd_CAAAREM, &resultado, sizeof(resultado));
+**/
+  if (result < 0)
+    fprintf(fptr1, "\n No se escribio la longitud del pedimento: <%d> \n", result);
+#endif
+
+  fprintf(fptr1, "\n El result es: <%d> \n", result);
+  fprintf(fptr1, "\n Network long: <%d> \n", EnviaTramanlhtonl);
+
+  fflush(fptr1);
+#ifdef __AMX_07_00087_0A_1
+  if ( (result = read(sockfd_CAAAREM, &nacuse1, sizeof(nacuse1))) == -1)
+  {
+    iIndAlterno=1;
+    fprintf(fptr1,"[LlamaCAAAREM] Error 8: Al leer el primer acuse -read- Archivo[%s] HOST[%s] Puerto[%d] Alterno=%d result=%d\n"
+	             ,EnviaTrama20,strDireccion,serv_tcp_caaarem,iIndAlterno,result);
+    fflush(fptr1);
+	renombrarArchivoS(EnviaTrama20,fptr1);
+	close(sockfd_CAAAREM);
+	return 1;
+  }
+#else
+  /**  read_data(sockfd_CAAAREM, RecibeTrama, MAXLINE, leidos_CAAAREM);  **/
+  if ((result = read(sockfd_CAAAREM, &nacuse1, sizeof(nacuse1))) == -1)
+         fprintf(fptr1,"Error al leer el primer acuse\n");
+  else
+    {
+    /**     hacuse1 = ntohl(nacuse1); **/
+    }
+#endif
+    fprintf(fptr1,"\n Acuse cabecera y long net <%d> \n", nacuse1);
+    fprintf(fptr1,"[LlamaCAAAREM]: nacuse1[%d]", nacuse1);
+    if (nacuse1 == 0)
+    {
+          fprintf(fptr1,"\n EnviArchivo: <%s>\n", EnviArchivo );
+          /**       write_data(sockfd_CAAAREM, EnviArchivo);      se debe hacer en paqs. de 1024 ???  **/
+
+     /**     strncpy(cadenaEnvio, EnviArchivo, EnviaTramanl);  **/
+     /**     sprintf(EnviArchivo,"%s\r\n\xD", EnviArchivo);  **/
+		  ptrbloque = (char *)malloc(EnviaTramanl + 1);
+		  memset(ptrbloque,'\0',EnviaTramanl + 1);
+		  sprintf(ptrbloque,"%s", EnviArchivo);
+          ptrbloque[strlen(ptrbloque)] = '\0';
+#ifdef __DEBUG_1
+          fprintf(fptr1,"4.ptrbloque[%s]\n",ptrbloque);
+          fflush(fptr1);
+#endif
+	/**  cadenaEnvio[EnviaTramanl+2] = '\0';  **/
+
+		  fprintf(fptr1,"[LlamaCAAAREM] EnviaTrama20 <%s>", EnviaTrama20);
+		  LeeCabecera(EnviaTrama20, olEsNoPedimento, charEnviosI);
+		  EnviosI = atoi(charEnviosI);
+#ifdef __DEBUG_1
+  fprintf(fptr1,"5.EnviosI=%d\n",EnviosI);
+  fflush(fptr1);
+#endif
+		  fprintf(fptr1,"[LlamaCAAAREM]: EnviArchivo <%s> a enviar <%d>", ptrbloque, EnviosI);
+		  fprintf(fptr1,"[LlamaCAAAREM]: EnviArchivo <%s>", EnviArchivo);
+
+		  /**  write(sockfd_CAAAREM, EnviArchivo, EnviaTramanl + 1);  **/
+		  fprintf(fptr1,"[LlamaCAAAREM] Caracteres a enviar:%ld\n", (strlen(ptrbloque)));
+		  fprintf(fptr1,"[LlamaCAAAREM] Bloque a enviar <%s>\n", ptrbloque);
+#ifdef __AMX_07_00087_0A_1
+  if ( (result = write(sockfd_CAAAREM, ptrbloque, (strlen(ptrbloque)))) < 0)
+  {
+    iIndAlterno=1;
+    fprintf(fptr1,"[LlamaCAAAREM] Error 9: No se pudo enviar el Archivo[%s] -write- HOST[%s] Puerto[%d] Alterno=%d result=%d\n"
+	             ,EnviaTrama20,strDireccion,serv_tcp_caaarem,iIndAlterno,result);
+    fflush(fptr1);
+	renombrarArchivoS(EnviaTrama20,fptr1);
+	close(sockfd_CAAAREM);
+	return 1;
+  }
+#else
+		  result = write(sockfd_CAAAREM, ptrbloque, (strlen(ptrbloque)));  /**EnviaTramanl + 1);  **/
+		  if (result <= 0)
+		  {
+			  fprintf(fptr1,"\n No se pudo enviar el archivo <%s>"
+					 "\n Entra a la carpeta de contingencia\n", EnviaTrama20);
+		  }
+#endif
 
 
-ValidaInicio Sin_Base
 
-export SERV_RUTA_DATOS="${DIR_INTERFACES}/"
-export ARCHPROC="ABSsrvrLC"                       #Nombre del proceso a ejecutar
-export BITACORAABSsrvr="$ARCHPROC.log"          #Escucha a CAAAREM y le habla al banco -entrada-
-export ArchSal="shl_$ARCHPROC.log"              #Archivo de salida del shell
+			/**sprintf(borravarenv, "unset %s", EnviaTrama20);
+			borravarenv[26] = '\0';
+			varborrada = system(borravarenv);
+
+			if ((varborradachar = getenv(EnviaTrama20)) != NULL)
+			{
+				fprintf(fptr1,"\n PRECAUCION: No se puede hacer <%s> , ejecutar manualmente.\n", borravarenv);
+			}
+			*/
+
+		  shutdown(sockfd_CAAAREM, SHUT_WR);
+#ifdef __AMX_07_00087_0A_1
+  if ( (result = read(sockfd_CAAAREM, (int *) &nacuse2, sizeof(nacuse2))) == -1)
+  {
+    iIndAlterno=1;
+    fprintf(fptr1,"[LlamaCAAAREM] Error 10: Al leer el segundo acuse Archivo[%s] -read- HOST[%s] Puerto[%d] Alterno=%d result=%d\n"
+	             ,EnviaTrama20,strDireccion,serv_tcp_caaarem,iIndAlterno,result);
+    fflush(fptr1);
+	renombrarArchivoS(EnviaTrama20,fptr1);
+	close(sockfd_CAAAREM);
+	return 1;
+  }
+#else
+		  if ((result = read(sockfd_CAAAREM, (int *) &nacuse2, sizeof(nacuse2))) == -1)
+			 fprintf(fptr1,"Error al leer el segundo acuse\n");
+		  else
+		  {
+/**			if(numPreval == 4)
+				hacuse2 = nacuse2;
+			else
+**/
+				hacuse2 = ntohl(nacuse2);
+		  }
+#endif
 
 
-#BITACORAS
-echo > $ArchSal
-echo "Inicia la ejecucion del proceso [shl_$ARCHPROC.sh]." >> $ArchSal
-echo "Fecha de proceso: $( date '+%d-%b-%Y %H:%M' )" >> $ArchSal
+		  if(numPreval != 4)
+		  {
 
-$DIR_PROG/$ARCHPROC >> $ArchSal
-res_bin=${?}
+		/** Inicia conversion */
+		  sprintf(xnumero, "%08X", nacuse2);
+		  xnumero[8] = '\0';
 
-if [ $res_bin -eq 137 ]; then
-	echo "Proceso finalizado por el monitor [$(date '+%d-%b-%Y %H:%M:%S')]" >> $ArchSal
+		  fprintf(fptr1,"EL NUMERO %d CONVERTIDO EN HEXADECIMAL ES %s\n", nacuse2, xnumero);
 
-	if [ -f "$DIR_INTERFACES/ABSsrvr.ko" ]; then
-		rm "$DIR_INTERFACES/ABSsrvr.ko" >>/dev/null 2>>/dev/null
-		echo "No se reiniciara el proceso, ha sido terminado 10 veces" >> $ArchSal
-      exit 98 #Terminado 10 veces seguidas
-	else
-		exit 99 #Codigo para reinicio por Control-M
-	fi
-fi
+		  strncpy(byte1, xnumero, 2);
+		  byte1[2] = '\0';
+		  fprintf(fptr1,"BYTE1[%s]\n", byte1);
 
+		  strncpy(byte2, xnumero +2, 2);
+		  byte2[2] = '\0';
+		  fprintf(fptr1,"BYTE2[%s]\n", byte2);
 
+		  strncpy(byte3, xnumero + 4, 2);
+		  byte3[2] = '\0';
+		  fprintf(fptr1,"BYTE3[%s]\n", byte3);
 
-echo "Fin de la ejecucion del proceso [shl_$ARCHPROC.sh]." >> $ArchSal
-echo "Fecha de proceso: $( date '+%d-%b-%Y %H:%M' )" >> $ArchSal
-echo " FIN `date` " >> $ArchSal
+		  strncpy(byte4, xnumero  + 6 , 2);
+		  byte4[2] = '\0';
+		  fprintf(fptr1,"BYTE4[%s]\n", byte4);
 
-ValidaEstatus
+		  sprintf(xinvertido, "%s%s%s%s", byte4, byte3, byte2, byte1);
+		  xinvertido[8] = '\0';
+#ifdef __DEBUG_1
+          fprintf(fptr1,"6.xinvertido[%s]\n",xinvertido);
+          fflush(fptr1);
+#endif
+		  hacuse2 = Convert(xinvertido, 16);
+#ifdef __DEBUG_1
+		  fprintf(fptr1,"7.%d=Convert(%s, 16)\n",hacuse2,xinvertido);
+          fflush(fptr1);
+#endif
+		  }
+
+		  fprintf(fptr1,"SE RECIBE FORMATO RED <%d> CONVERTIDO A ENTERO <%d>\n", nacuse2, hacuse2);
+		/**  Termina Conversion  **/
+			   fprintf(fptr1,"\n Acuse Archivo net <%d> \n", nacuse2);
+
+			   fprintf(fptr1, "\n Acuse Archivo host <%d> \n", hacuse2);
+
+			   fflush(fptr1);
+
+			   if (hacuse2 == 0)
+			   {
+#ifdef __AMX_07_00087_0A_1
+				    iIndAlterno=0;
+#endif
+					fprintf(fptr1,"\n BanCAAAREM: Cabecera y Archivo aceptados.  \n");
+			   }
+			   else
+			   {
+					fprintf(fptr1,"\n BanCAAAREM: Archivo Rechazado. %d \n", hacuse2);
+			   }
+		  }
+		  else
+		  {
+			   fprintf(fptr1,"\n BanCAAAREM: Cabecera Rechazada. Archivo no enviado. %d \n", hacuse1);
+		  }
+
+    fflush(fptr1);
+
+/**    shutdown(sockfd_CAAAREM, SHUT_WR);  **/
+    close(sockfd_CAAAREM);
+
+    if (leidos_CAAAREM)
+       free(leidos_CAAAREM);
+	if (charEnviosI)
+		free(charEnviosI);
+	if (varborradachar)
+		free(varborradachar);
+	if (ptrbloque)
+		free(ptrbloque);
+#ifdef __AMX_07_00087_0A_1
+	if(iIndAlterno)
+	{
+      fprintf(fptr1,"[LlamaCAAAREM] Error 11: Archivo[%s]  HOST[%s] Puerto[%d] Alterno=%d result=%d\n"
+	             ,EnviaTrama20,strDireccion,serv_tcp_caaarem,iIndAlterno,result);
+      fflush(fptr1);
+	  renombrarArchivoS(EnviaTrama20,fptr1);
+	}
+    return iIndAlterno;
+#else
+	return 0;
+#endif
+}
