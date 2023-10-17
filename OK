@@ -1,71 +1,710 @@
-export FEC="`date +%b%d`"
-export HOSTNAME=`hostname`
-
+#!/bin/bash
+# Aplicacion:                        Administracion de mensajeria para el Pago Electronico.
+#                                    de Impuestos Aduanales.
+# Macro Aplicacion:                  Pago Electronico de Impuestos Aduanales
+#                                    (Pedimentos)
+# Nombre del shell:                  shl_BanCAAAREMalterno.sh
+# Tipo de proceso (BATCH u ONLINE):  BATCH
+# Periodicidad:                      DIARIARIAMENTE
+# Equipo de produccion:              MXPECPRO40 y MXPECPRO41
+# Tiempo de ejecucion del proceso:   Aproximadamente 1 minuto.
 #
-#Crea path de salidas
+# Descripcion de funcionalidad general del proceso:
+#                                    Invoca al binario BanCAAAREMalterno
 #
+#
+# Base de Datos:                     N/A
+# Tablas que accede:                 N/A
+# Reprocesable (SI o NO):            SI
+# Acciones a seguir en caso de reproceso:
+#                                    Verificar que los prevalidadores esten listos.
+#                                    Los prevalidadores se mencionan en el archivo de
+#                                    configuracion Prevalidadores.cnf
+#
+#
+# Srvrs tuxedo:                      N/A
+# Lista de Variables que utiliza:
+# Fecha de creacion:                 Septiembre 2008 ***IBM-PRO-CAN-1610 AMX-07-00087-0A***
+# Autor:                             Rosalia Trejo Lozada/Victor Leo Kallen Soto
+# Fecha de ultima modificacion:      07/09/2012
+# Autor ultima modificacion:         Jorge E. Moreno A.
+# Motivo de ultima modificacion:     Correccion de estandares
+# Fecha modificacion:                09/03/2015
+# Autor modificacion:                Victor Manuel Blanco Deanda	
+# Motivo modificacion:               Eliminar retrazos para la validacion de errores
+# ***********************************************
 
-if [ -z  "$DIR_PROG" ] ; then
-   export DIR_PROG="`pwd`"
-   if [ "`echo "$0"|awk -F\/ '{print NF}'`" -gt "1" ] ; then
-    DIR_PROG="`echo $0|sed \"s/\`echo $0$|awk -F\/ '{print $NF}'\`//g\"`"
-   fi
-   #se le aqadio comparacisn con "././"
-   if [ "$DIR_PROG" = "./" -o "$DIR_PROG" = "././"  ] ; then
-     DIR_PROG="`pwd`"
-   fi
-   export DIR_PROG
+export DIR_UTIL=/planics1/procesos/soptec/util
+#Valida existencia y permisos de ejecucion del shell encab_ini.sh
+if [ ! -x ${DIR_UTIL}/encab_ini.sh ] ; then
+ echo "NO existe encab_ini.sh, el proceso NO puede continuar"
+ exit 1
 fi
-cd $DIR_PROG
+. $DIR_UTIL/encab_ini.sh $0_"`hostname`" "Proceso alterno automatico de reenvio de firmas" shl_BanCAAAREMalterno
+set +x
 
+ValidaInicio Sin_Base
 
-if [  -z $NOM_PROG ]; then
-        #
-        # Asigna el nombre del proceso, eliminando el path.
-        #
-        NOM_PROG="`echo $1|awk -F\/ '{print $NF}'`"
-      if [ -z "$NOM_PROG" ] ; then
-          NOM_PROG="$0"
+PROGRAMA_=BanCAAAREMalterno
+shell_=shl_$PROGRAMA_.sh
+
+colPREVALIDADOR_[1]=NUMERO
+colPREVALIDADOR_[2]=HOST_IP
+colPREVALIDADOR_[3]=HOST_NAME
+colPREVALIDADOR_[4]=PUERTO1
+colPREVALIDADOR_[5]=PUERTO2
+colPREVALIDADOR_[6]=GRUPO_EMAILde
+colPREVALIDADOR_[7]=GRUPO_EMAILa
+colPREVALIDADOR_[8]=IntentosReenvio
+colPREVALIDADOR_[9]=SLEEP
+colPREVALIDADOR_[10]=PREVALIDADOR
+colPREVALIDADOR_[11]=servidor
+colPREVALIDADOR_[12]=ip
+colPREVALIDADOR_[13]=formato
+parPREVALIDADOR_[1]=1
+parPREVALIDADOR_[2]=1
+parPREVALIDADOR_[3]=1
+parPREVALIDADOR_[4]=1
+parPREVALIDADOR_[5]=1
+parPREVALIDADOR_[6]=1
+parPREVALIDADOR_[7]=1
+parPREVALIDADOR_[8]=1
+parPREVALIDADOR_[9]=1
+parPREVALIDADOR_[10]=1
+parPREVALIDADOR_[11]=0
+parPREVALIDADOR_[11]=0
+parPREVALIDADOR_[11]=0
+
+AltoCF=NO
+cSeparador=
+indAltoCF=18
+__ATTACHED_FILE_MAIL_=1
+EQUIPO__="`uname -n`"
+HORAlimite_=2340
+MARCA_=
+MARCA2_=
+_MAX_ARCHIVOS_=0
+msgError_=
+pNumParametros=0
+Shell_=$shell_
+
+iCount=0
+iCountPreval=0
+indDepuraArch=0
+indicador_=0
+indPrevalINDEFINIDO_=0
+iNumLineas_=0
+iNumParametros=0
+iRenombrarARCHIVO=0
+result=0
+
+dos2unixArchivo ()
+{
+  Nfecha="`date '+%d/%m/%Y %H:%M:%S'`"
+  rutina_="dos2unixArchivo"
+  for renglon in 1 2
+  {
+    i0=$renglon'0'
+    if [[ -z ${ARCHIVO_[$i0]} ]] ; then
+      continue
+    fi
+    if ! [[ -s $DIR_INTERFACES/${ARCHIVO_[$i0]} ]] ; then
+      echo "Error $DIR_INTERFACES/${ARCHIVO_[$i0]}: No such file" >>$shell_.out
+      msgError_=$msgError_"${ARCHIVO_[$i0]}: No such file "
+      continue
+    fi
+    echo "MOVER: mv $DIR_INTERFACES/${ARCHIVO_[$i0]} ${ARCHIVO_[$i0]}" >>$shell_.out
+    mv $DIR_INTERFACES/${ARCHIVO_[$i0]} ${ARCHIVO_[$i0]}.tmp >>$shell_.out 2>>$shell_.out
+    dos2unix -n ${ARCHIVO_[$i0]}.tmp ${ARCHIVO_[$i0]} >>$shell_.out 2>>$shell_.out
+    rm -f ${ARCHIVO_[$i0]}.tmp
+  }
+  Nfecha="`date '+%d/%m/%Y %H:%M:%S'`"
+}
+ejecutaProgramaCC_BanCAAAREMalterno()
+{
+  Nfecha="`date '+%d/%m/%Y %H:%M:%S'`"
+  rutina_="ejecutaProgramaCC_BanCAAAREMalterno"
+  renglon=2
+  OUT_=$PROGRAMA_'LOTE'$iLote.out
+  echo "$Nfecha LOTE$iLote Inicia $PROGRAMA_ \"$PARAMETROS_\" >>$OUT_" >>$shell_.out
+  $DIR_PROG/$PROGRAMA_ "$PARAMETROS_" >>$OUT_ 2>>$OUT_
+  result=$?
+  Nfecha="`date '+%d/%m/%Y %H:%M:%S'`"
+  echo "$Nfecha LOTE$iLote regreso $PROGRAMA_ result=$result" >>$shell_.out
+  Nfecha="`date '+%d/%m/%Y %H:%M:%S'`"
+  rutina_="ejecutaProgramaCC_BanCAAAREMalterno"
+}
+eliminarArchivosVacios()
+{
+  Nfecha="`date '+%d/%m/%Y %H:%M:%S'`"
+  rutina_="eliminarArchivosVacios"
+  for lin in `find . -name "$1" 2>>$shell_.out`
+  {
+    if ! [[ -f $lin ]] ; then
+      continue
+    fi
+    VAR_=`awk -F\| 'END {print ""NR""}' $lin 2>>$shell_.out`
+    if [[ $VAR_ -eq 0 ]] ; then
+      rm -f $lin
+      echo "[$lin] eliminado; [$VAR_] registros" >>$shell_.out
+    fi
+  }
+  Nfecha="`date '+%d/%m/%Y %H:%M:%S'`"
+}
+FinProgramaCC_BanCAAAREMalterno ()
+{
+  Nfecha="`date '+%d/%m/%Y %H:%M:%S'`"
+  rutina_="FinProgramaCC_BanCAAAREMalterno"
+  eliminarArchivosVacios "*"
+  rm -f *temp* *.tmp*
+  NfechaProc="`date '+%Y%m%d%H%M'`"
+  Nfecha="`date '+%d/%m/%Y %H:%M:%S'`"
+  rutina_="FinProgramaCC_BanCAAAREMalterno"
+}
+InicioBanCAAAREMalterno()
+{
+  NfechaLimite="`date '+%Y%m%d'$HORAlimite_`"
+  Nfecha="`date '+%d/%m/%Y %H:%M:%S'`"
+  rutina_="InicioBanCAAAREMalterno"
+  echo "$Nfecha $rutina_ LOTE$iLote Hora Limite[$HORAlimite_]" >>$shell_.out
+  cSeparador=:
+  MARCA_=CORREO
+  _MAX_ARCHIVOS_=10
+  pNumParametros=18
+  result=0
+  validaVariables
+  validaObjetos 1
+  if ! [[ -s $DIR_PROG/Prevalidadores.cnf ]] ; then
+    exit 1
+  fi
+  fgrep "$EQUIPO__" $DIR_PROG/Prevalidadores.cnf > Prevalidadores.cnf 2>>$shell_.out
+  if ! [[ -s Prevalidadores.cnf ]] ; then
+    exit 1
+  fi
+  prevalidadoresBanCAAAREMalternoLeeCNF
+  prefijosBanCAAAREMalternoLee
+  rutina_="InicioBanCAAAREMalterno"
+  Nfecha="`date '+%d/%m/%Y %H:%M:%S'`"
+  NfechaProc="`date '+%Y%m%d%H%M'`"
+  echo "$Nfecha Fin $rutina_ ***HORARIO LIMITE[$NfechaProc-$NfechaLimite]***" >>$shell_.out
+}
+prefijosBanCAAAREMalternoLee()
+{
+  Nfecha="`date '+%d/%m/%Y %H:%M:%S'`"
+  rutina_="prefijosBanCAAAREMalternoLee"
+  iNumPrefijos=0
+  echo "prefijosBanCAAAREMalterno.lst{" >>$shell_.out
+  for linea_ in `cat $DIR_PROG/prefijosBanCAAAREMalterno.lst|fgrep $PROGRAMA_`
+  {
+    (( iNumPrefijos=iNumPrefijos+1 ))
+    PREFIJOS_[$iNumPrefijos]=$linea_
+    echo -n "$iNumPrefijos.${PREFIJOS_[$iNumPrefijos]}," >>$shell_.out
+  }
+  echo "NumPrefijos = $iNumPrefijos" >>$shell_.out
+  echo -n "} " >>$shell_.out
+  Nfecha="`date '+%d/%m/%Y %H:%M:%S'`"
+}
+preparaArchivosBanCAAAREMalterno()
+{
+  arch_=$1
+  renglon=$2
+
+  Nfecha="`date '+%d/%m/%Y %H:%M:%S'`"
+  rutina_="preparaArchivosBanCAAAREMalterno"
+  i0=$renglon'0'
+  i3=$renglon'3'
+  i4=$renglon'4'
+  i10=$renglon'10'
+  ARCHIVO_[$i3]=$arch_
+  ARCHIVO_[$i4]=`echo $arch_|echo ${arch_%/*}`
+  ARCHIVO_[$i4]=`echo $arch_|echo ${arch_%/*}|sed /"\/"/s//"slash"/g`
+  ARCHIVO_[$i0]=`echo $arch_|sed /"\/"/s//"slash"/g|sed /"${ARCHIVO_[$i4]}"/s///g|sed /"slash"/s///g`
+  if ! [[ -s ${ARCHIVO_[$i3]} ]] ; then
+    indError=1
+    (( indDepuraArch=renglon-1 ))
+    cError="${ARCHIVO_[$i3]}: No such file Not Ok"
+    return
+  fi
+  case $renglon in
+  2) #Archivo E o e
+    numRegs[$renglon]=`cat ${ARCHIVO_[$i3]}|head -1|tr -cd "[0-9]"`
+    ;;
+  *)
+    numRegs[$renglon]=`awk -F\| 'END {print NR}' ${ARCHIVO_[$i3]}|tr -cd "[0-9]"`
+    ;;
+  esac
+}
+prevalidadoresBanCAAAREMalterno()
+{
+  Nfecha="`date '+%d/%m/%Y %H:%M:%S'`"
+  rutina_="prevalidadoresBanCAAAREMalterno"
+  echo "$Nfecha $rutina_ [${ARCHIVO_[20]}]" >>$shell_.out
+  if ! [[ -s ${ARCHIVO_[20]} ]] ; then
+    return
+  fi
+  ARCHIVO_[25]=
+  renglon=0
+  numPreval=`echo ${ARCHIVO_[20]}|cut -c18-20`
+  if [[ -z "$numPreval" ]] ; then
+    Nfecha="`date '+%d/%m/%Y %H:%M:%S'`"
+    result=93
+    echo "$Nfecha $shell_ Error 93.1: [${ARCHIVO_[20]}] con Prevalidador[$numPreval] result=$result" >>$shell_.out
+    return
+  fi
+  echo -n "PREVALIDADOR[$numPreval] " >>$shell_.out
+  while (( renglon < ${#PREVALIDADOR_[*]} ))
+  do
+    (( renglon=renglon+1 ))
+    i1=$renglon'1'
+    if [[ "${PREVALIDADOR_[$i1]}" != "$numPreval" ]] ; then
+      continue
+    fi
+    ARCHIVO_[25]=$renglon
+    prevalidadoresBanCAAAREMalternoIndices
+    columna=0
+    if [[ -z "${iCountP[$indicePreval1]}" ]] ; then
+      iCountP[$indicePreval1]=0
+    fi
+    PARAMETROS2_=
+    while (( columna < ${#colPREVALIDADOR_[*]} ))
+    do
+      (( columna=columna+1 ))
+      indice=$renglon$columna
+      if [[ ${parPREVALIDADOR_[$columna]} -eq 1 ]] ; then
+        PARAMETROS2_="$PARAMETROS2_${PREVALIDADOR_[$indice]}$cSeparador"
       fi
-      echo $NOM_PROG
-      echo $nom_prog_res
+      echo -n "$indice.${colPREVALIDADOR_[$columna]}[${PREVALIDADOR_[$indice]}] " >>$shell_.out
+    done
+    echo -n " Ok " >>$shell_.out
+    break
+  done
+  if [[ -z "${ARCHIVO_[25]}" ]] ; then
+    echo -n "Not Ok " >>$shell_.out
+    Nfecha="`date '+%d/%m/%Y %H:%M:%S'`"
+    result=93
+    echo "$Nfecha $shell_ Error 93.2: [${ARCHIVO_[20]}] con Prevalidador[$numPreval] NO catalogado result=$result" >>$shell_.out
+  fi
+  Nfecha="`date '+%d/%m/%Y %H:%M:%S'`"
+}
+prevalidadoresBanCAAAREMalternoEnviaEMAIL ()
+{
 
-      #read
-      if [ "$NOM_PROG" != "$nom_prog_res" ]; then
-         NOM_PROG="`echo $NOM_PROG|awk -F\/ '{print $NF}'`"
-         export NOM_PROG
+  if [[ -z "${PREVALIDADOR_[$i10]}" ]] ; then
+    return
+  fi
+  Nfecha="`date '+%d/%m/%Y %H:%M:%S'`"
+  rutina_="prevalidadoresBanCAAAREMalternoEnviaEMAIL a [${PREVALIDADOR_[$i10]}]"
 
+  i6=$renglon'6'
+  i7=$renglon'7'
+  i8=$renglon'8'
+  i13=$renglon'13'
+  GRUPO_EMAILde=${PREVALIDADOR_[$i6]}
+  GRUPO_EMAILa=${PREVALIDADOR_[$i7]}
 
-          #
-          # Define la variable SALIDAS y crea los directorios necesarios para
-          # crear los archivos de salida de c/u de los procesos.
-          #
+  if [[ -s "$MARCA_.${PREVALIDADOR_[$i10]}.attached" ]] ; then
+    echo "***$i10.SE ENVIA CORREO AL PREVALIDADOR ${PREVALIDADOR_[$i10]}***">>$shell_.out
+    MARCA2_="`date '+%Y%m%d_%H%M%S'`"
+    filesAttach2_=`cat $MARCA_.${PREVALIDADOR_[$i10]}.attached 2>>$shell_.out`
+    mv $MARCA_.${PREVALIDADOR_[$i10]}.attached $MARCA_.${PREVALIDADOR_[$i10]}.attached.$MARCA2_ 2>>$shell_.out
+    ls -l $filesAttach2_ >>$shell_.out 2>>$shell_.out
+    filesAttach_=`echo $filesAttach2_|sed /" "/s//","/g 2>>$shell_.out`
+  else
+    filesAttach_=
+    return
+  fi
+  msg_="*** ARCHIVOS NO ENVIADOS DESPUES DE ${PREVALIDADOR_[$i8]} INTENTO(S) -${PREVALIDADOR_[$i13]}-***"
+  if [[ "${PREVALIDADOR_[$i13]}" == "dos" ]] ; then
+    echo $filesAttach_|tr -s ',' '\n'|xargs -I {} -t unix2dos {} {} 2>>$shell_.out
+  fi
+  echo "$msg_" >>$shell_.out
+  echo "from:$GRUPO_EMAILde" > envia_correo.txt
+  echo "to:$GRUPO_EMAILa" >> envia_correo.txt
+  echo "subject:Proceso alterno automatico de reenvio de firmas (${PREVALIDADOR_[$i10]})" >> envia_correo.txt
+  echo "Send email Attach files: [$filesAttach_]" >>$shell_.out
+  echo "msg:$msg_" >> envia_correo.txt
+  echo "file:$filesAttach_" >> envia_correo.txt
+  fileMsg_="envia_correo.txt.${PREVALIDADOR_[$i10]}.`date '+%Y%m%d_%H%M%S'`"
+  echo "$i10.CORREO: JCorreo envia_correo.txt -$fileMsg_-" >>$shell_.out
+  java -classpath ".:${DIR_PROG}/activation.jar:${DIR_PROG}/mail.jar:${DIR_PROG}/JCorreo.jar" \
+    mx.com.santander.aduanas.Correo $MAIL_SERVER envia_correo.txt 2>>$shell_.out
+  echo "$i10.GUARDAR: envia_correo.txt a $fileMsg_" >>$shell_.out
+  mv envia_correo.txt $fileMsg_ >>$shell_.out 2>>$shell_.out
+}
+prevalidadoresBanCAAAREMalternoCORREO ()
+{
+  Nfecha="`date '+%d/%m/%Y %H:%M:%S'`"
+  rutina_="prevalidadoresBanCAAAREMalternoCORREO"
+  prevalidadoresBanCAAAREMalternoCORREOout
+  filesAttach_=
+  renglon=0
+  while (( renglon < ${#PREVALIDADOR_[*]} ))
+  do
+    (( renglon=renglon+1 ))
+    i10=$renglon'10'
+    prevalidadoresBanCAAAREMalternoEnviaEMAIL
+  done
+  Nfecha="`date '+%d/%m/%Y %H:%M:%S'`"
+  rutina_="prevalidadoresBanCAAAREMalternoCORREO"
+}
+prevalidadoresBanCAAAREMalternoCORREOout ()
+{
+  if [[ $__ATTACHED_FILE_MAIL_ -eq 0 ]] ; then
+    return
+  fi
+  Nfecha="`date '+%d/%m/%Y %H:%M:%S'`"
+  rutina_="prevalidadoresBanCAAAREMalternoCORREOout"
 
-          SALIDAS=$DIR_PROG/salidas/$FEC
-          export SALIDAS
-
-          if [ ! -d "$DIR_PROG/salidas" ] ; then
-            mkdir $DIR_PROG/salidas 2>/dev/null
-            chmod 775 $DIR_PROG/salidas
-          fi
-
-          if [ ! -d "$SALIDAS" ] ; then
-             mkdir $SALIDAS 2>/dev/null
-             chmod 775 $SALIDAS
-          fi
-
-          if [ ! -d "$SALIDAS/$NOM_PROG" ] ; then
-              mkdir $SALIDAS/$NOM_PROG 2>/dev/null
-              chmod 775 $SALIDAS/$NOM_PROG
-          else
-              mv "$SALIDAS/$NOM_PROG" $SALIDAS/$NOM_PROG"_""`date '+%H:%M:%S'`"
-              mkdir $SALIDAS/$NOM_PROG 2>/dev/null
-              chmod 775 $SALIDAS/$NOM_PROG
-          fi
-
+  renglon=0
+  while (( renglon < ${#PREVALIDADOR_[*]} ))
+  do
+    (( renglon=renglon+1 ))
+    i10=$renglon'10'
+    if [[ -z ${PREVALIDADOR_[$i10]} ]] ; then
+      continue
+    fi
+    VAR_=`fgrep "$MARCA_" $OUT_|fgrep ${PREVALIDADOR_[$i10]} 2>>$shell_.out`
+    if [[ -n "$VAR_" ]] ; then
+      echo "`echo $VAR_|sed /"$MARCA_${PREVALIDADOR_[$i10]}"/s///g|tr -s '+' '\n'`" >> $MARCA_.${PREVALIDADOR_[$i10]} 2>>$shell_.out
+    fi
+  done
+  Nfecha="`date '+%d/%m/%Y %H:%M:%S'`"
+}
+prevalidadoresBanCAAAREMalternoIndices()
+{
+  Nfecha="`date '+%d/%m/%Y %H:%M:%S'`"
+  rutina_="prevalidadoresBanCAAAREMalternoIndices"
+  echo -n "$Nfecha $rutina_{" >>$shell_.out
+  renglon=${ARCHIVO_[25]}
+  columna=0
+  while (( columna < ${#colPREVALIDADOR_[*]} ))
+  do
+    (( columna=columna+1 ))
+    VAR_="indicePreval${columna}"
+    eval $VAR_=$renglon$columna
+  done
+  echo -n "$indicePreval1,$indicePreval2,$indicePreval10,$indicePreval4,$indicePreval5,$indicePreval6,$indicePreval7,$indicePreval8,$indicePreval9,$indicePreval10} " >>$shell_.out
+  Nfecha="`date '+%d/%m/%Y %H:%M:%S'`"
+}
+prevalidadoresBanCAAAREMalternoLeeCNF()
+{
+  Nfecha="`date '+%d/%m/%Y %H:%M:%S'`"
+  rutina_="prevalidadoresBanCAAAREMalternoLeeCNF"
+  renglon=0
+  echo "Prevalidadores.cnf" >>$shell_.out
+  for linea_ in `cat Prevalidadores.cnf`
+  {
+    (( renglon=renglon+1 ))
+    if [[ "`echo $linea_|cut -d'|' -f1`" == "999" ]] ; then
+      indPrevalINDEFINIDO_=$renglon
+      echo "PREVALIDADOR INDEFINIDO renglon[$indPrevalINDEFINIDO_]" >>$shell_.out
+    fi
+    columna=0
+    echo -n "$renglon.{" >>$shell_.out
+    while (( columna < ${#colPREVALIDADOR_[*]} ))
+    do
+      (( columna=columna+1 ))
+      indice=$renglon$columna
+      PREVALIDADOR_[$indice]=`echo $linea_|cut -d'|' -f$columna`
+      echo -n "$columna.${colPREVALIDADOR_[$columna]}[${PREVALIDADOR_[$indice]}]," >>$shell_.out
+    done
+    echo -n "} " >>$shell_.out
+  }
+  Nfecha="`date '+%d/%m/%Y %H:%M:%S'`"
+}
+procesarLOTE_BanCAAAREMalterno()
+{
+  Nfecha="`date '+%d/%m/%Y %H:%M:%S'`"
+  rutina_="$iLote.procesarLOTE_BanCAAAREMalterno"
+  rutina2_=$rutina_
+  iIndInicioLOTE=0
+  iNumEjec=0
+  iNumPrefijos=0
+  PARAMETROS_=
+  while (( iNumPrefijos < ${#PREFIJOS_[*]} ))
+  do
+    (( iNumPrefijos=iNumPrefijos+1 ))
+    linea_=${PREFIJOS_[$iNumPrefijos]}
+    VAR_=`echo $linea_|cut -d'|' -f2`
+    PREVAL_=
+    if [[ -z $VAR_ ]] ; then
+      break
+    fi
+    archivos_=`find $DIR_INTERFACES -name "$VAR_" -exec ls -tr {} \;|head -1 2>>$shell_.out`
+    if [[ -z $archivos_ ]] ; then
+      continue
+    fi
+    VAR2_=$archivos_
+    for renglon in 1 2
+    {
+      i1=$renglon'1'
+      i2=$renglon'2'
+      ARCHIVO_[$i1]=
+      ARCHIVO_[$i2]=
+    }
+    ARCHIVO_[21]=`echo $linea_|cut -d'|' -f3`
+    ARCHIVO_[12]=`echo $linea_|cut -d'|' -f4|cut -c1`
+    ARCHIVO_[22]=`echo $linea_|cut -d'|' -f4|cut -c2`
+    ARCHIVO_[16]=`echo $linea_|cut -d'|' -f5|cut -c1`
+    ARCHIVO_[26]=`echo $linea_|cut -d'|' -f5|cut -c2`
+    for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30
+    {
+      VAR2_=${VAR2_#*/}
+      if [[ "$PREVAL_" ==  "$VAR2_" ]] ; then
+        break
       fi
-fi
+      PREVAL_=$VAR2_
+    }
+    PREVAL_=${PREVAL_:5:3}
+    PREVAL_=`echo $PREVAL_|tr -cd "[0-9]"`
+    if [[ -z $PREVAL_ ]] ; then
+      break
+    fi
+    echo "$Nfecha FILTRO(2): [$PREVAL_][$archivos_]" >>$shell_.out
+    archivos_=`ls $archivos_;ls -tr $DIR_INTERFACES/$VAR_|fgrep -v $PREVAL_|head -$_MAX_ARCHIVOS_ 2>>$shell_.out`
+    echo "$Nfecha FILTRO(3): [$PREVAL_][$archivos_]" >>$shell_.out
+    if [[ -z $archivos_ ]] ; then
+      break
+    fi
+    if [[ $iIndInicioLOTE -eq 0 ]] ; then
+      iIndInicioLOTE=1
+      (( iLote=iLote+1 ))
+    fi
+    echo "$Nfecha $rutina_$iLote" >>$shell_.out
+    echo "$iNumPrefijos.PREFIJO: [$VAR_][${ARCHIVO_[21]}-${ARCHIVO_[22]}-${ARCHIVO_[26]}][${ARCHIVO_[12]}-${ARCHIVO_[16]}] MAX_ARCHIVOS=$_MAX_ARCHIVOS_ archivos[$archivos_]" >>$shell_.out
+    for archivo_ in `echo $archivos_|tr -s ' ' '\n'`
+    {
+      indError=0
+      indicePreval10=$indPrevalINDEFINIDO_'10'
+      result=0
+      cError=Ok
+      (( iNumEjec=iNumEjec+1 ))
+      echo "$rutina_ $iNumEjec.Archivo[$archivo_]" >>$shell_.out
+      for renglon in 1 2
+      {
+        i0=$renglon'0'
+        i3=$renglon'3'
+        i4=$renglon'4'
+        i10=$renglon'10'
+        ARCHIVO_[$i0]=
+        ARCHIVO_[$i3]=
+        ARCHIVO_[$i4]=
+        numRegs[$renglon]=0
+      }
+      ARCHIVO_[11]=
+      renglon=1
+      preparaArchivosBanCAAAREMalterno $archivo_ $renglon
+      ARCHIVO_[11]=`echo ${ARCHIVO_[10]}|cut -c1`
+      ARCHIVO_[1]=`echo ${ARCHIVO_[10]}|cut -c2-13`
+      renglon=2
+      archivo2_=`find $DIR_INTERFACES -name "${ARCHIVO_[21]}${ARCHIVO_[1]}*"|head -1 2>>$shell_.out`
+      if [[ -z $archivo2_ ]] ; then
+        indError=2
+        (( indDepuraArch=renglon-1 ))
+        cError="${ARCHIVO_[21]}${ARCHIVO_[1]}* Not Ok"
+      else
+        preparaArchivosBanCAAAREMalterno $archivo2_ $renglon
+        if [[ "${numRegs[1]}" != "${numRegs[2]}" || "${numRegs[2]}" == "0" || -z "${numRegs[2]}" ]] ; then
+          indError=3
+          indDepuraArch=renglon
+          cError="#Regs. Not Ok"
+        fi
+      fi
+      Nfecha="`date '+%d/%m/%Y %H:%M:%S'`"
+      echo "$Nfecha $iNumEjec.$renglon.6.[${ARCHIVO_[10]}] [${ARCHIVO_[20]}] [${numRegs[1]}-${numRegs[2]}] indDepuraArch=$indDepuraArch $cError" >>$shell_.out
+      dos2unixArchivo
+      prevalidadoresBanCAAAREMalterno
+      if [[ $indError -ne 0 ]] ; then
+        renombrarARCHIVO_BanCAAAREMalterno
+        continue
+      fi
+      echo "$rutina_ result=$result" >>$shell_.out
+      if [[ $result -ne 0 ]] ; then
+        return
+      fi
+      iCountPreval=${iCountP[$indicePreval1]}
+      (( iCountPreval=iCountPreval+1 ))
+      iCountP[$indicePreval1]=$iCountPreval
+      ARCHIVO_Ff_=${ARCHIVO_[20]}
+      ARCHIVO_Bb=${ARCHIVO_[10]}
+      PREFIJO_Bb=${ARCHIVO_Bb:0:1}
+      ARCHIVO_Bb_=$PREFIJO_Bb${ARCHIVO_Ff_:1:20}
+      echo "$ARCHIVO_Ff_->$ARCHIVO_Bb_ [$PREFIJO_Bb]" >>$shell_.out
+      OUTdate_="`date '+%Y%m%d%H%M%S'`"
+      VAR_="${numRegs[2]}$cSeparador${ARCHIVO_[20]}$cSeparador${ARCHIVO_[22]}$cSeparador${ARCHIVO_[26]}$cSeparador${ARCHIVO_[10]}$cSeparador${ARCHIVO_[12]}$cSeparador${ARCHIVO_[16]}$cSeparador$OUTdate_$cSeparador"
+      PARAMETROS2_="$PARAMETROS2_$VAR_"
+      echo -n "COMPLEMENTA PARAMETROS: $VAR_" >>$shell_.out
+      VAR_="`echo $PARAMETROS2_|tr -cd "[$cSeparador]"`"
+      iNumParametros=${#VAR_}
+      echo -n " de $iNumParametros parametros" >>$shell_.out
+      if [[ $iNumParametros -ne $pNumParametros ]] ; then
+	echo -n " Not Ok " >>$shell_.out
+        echo "$Nfecha $shell_ Error 93.3: Fallo numero de Parametros $iNumParametros vs. $pNumParametros para [${ARCHIVO_[20]}]" >>$shell_.out
+      else
+	echo -n " Ok " >>$shell_.out
+	PARAMETROS_=$PARAMETROS_$PARAMETROS2_
+      fi
+    }
+  done
+  if [[ -n $PARAMETROS_ ]] ; then
+    ejecutaProgramaCC_BanCAAAREMalterno
+    WaitingFinProcesos
+    prevalidadoresBanCAAAREMalternoCORREO
+  fi
+  FinProgramaCC_BanCAAAREMalterno
+  if [[ $iNumEjec -ne 0 ]] ; then
+    (( iNumEjec=iNumEjec-1 ))
+  fi
+  rutina_="$iLote.procesarLOTE_BanCAAAREMalterno"
+  Nfecha="`date '+%d/%m/%Y %H:%M:%S'`"
+  NfechaProc="`date '+%Y%m%d%H%M'`"
+  rutina_=$rutina2_
+  if [[ $iNumEjec -ne 0 ]] ; then
+    echo "$Nfecha Fin $rutina_ $iNumEjec ejecucion(es) Fechas[$NfechaProc-$NfechaLimite]" >>$shell_.out
+  fi
+}
+ProcesarBanCAAAREMalterno()
+{
+  Nfecha="`date '+%d/%m/%Y %H:%M:%S'`"
+  rutina_="ProcesarBanCAAAREMalterno"
+  echo "$Nfecha $rutina_ indAltoCF[$indAltoCF]" >>$shell_.out
+  iLote=0
+  result=0
+  # Ciclo de atencion de peticiones hasta cambio de dia o bandera de fin
+  while [[ $result -ne $indAltoCF ]]
+   do
+     NfechaProc="`date '+%Y%m%d%H%M'`"
+     if [[ "$NfechaProc" -ge "$NfechaLimite" ]] ; then
+       result=$indAltoCF
+       echo "$Nfecha $rutina_ ***EXCEDE HORARIO LIMITE[$NfechaProc] vs. [$NfechaLimite] indAltoCF[$indAltoCF]***" >>$shell_.out
+     else
+       procesarLOTE_BanCAAAREMalterno
+     fi
+     sleep 10
+   done #while atencion de peticion
 
-#
-# Se pasa al directorio de salida del proceso.
-#
+  Nfecha="`date '+%d/%m/%Y %H:%M:%S'`"
+  echo -n "$Nfecha ***TERMINACION NORMAL DEL PROCESO [$NfechaProc-$NfechaLimite] con [$iLote] LOTES*** " >>$shell_.out
+  if [[ $result -eq $indAltoCF ]] ; then
+    AltoCF=SI
+    echo -n " WARNING " >>$shell_.out
+  fi
+  echo -n " AltoCF=$AltoCF result=$result " >>$shell_.out
+  result=0
+  Nfecha="`date '+%d/%m/%Y %H:%M:%S'`"
+  rutina_="ProcesarBanCAAAREMalterno"
+  echo "$Nfecha Fin $rutina_ result=$result" >>$shell_.out
+}
+renombrarARCHIVO_BanCAAAREMalterno()
+{
+  Nfecha="`date '+%d/%m/%Y %H:%M:%S'`"
+  rutina_="renombrarARCHIVO_BanCAAAREMalterno"
+  echo "$Nfecha $rutina_ indDepuraArch=$indDepuraArch" >>$shell_.out
+  ATTACHED_=
+  (( iRenombrarARCHIVO=iRenombrarARCHIVO+1 ))
+  for renglon in 1 2
+  {
+    if [[ $indDepuraArch -lt $renglon ]] ; then
+      break
+    fi
+    i0=$renglon'0'
+    i6=$renglon'6'
+    VAR_=${ARCHIVO_[$i0]}
+    VAR_="${ARCHIVO_[$i6]}`echo ${VAR_:1:19}`"
+    if ! [[ -a $DIR_INTERFACES/${ARCHIVO_[$i0]} ]] ; then
+      echo "$renglon.MOVER(1): $DIR_INTERFACES/${ARCHIVO_[$i0]} No such file" >>$shell_.out
+      continue
+    fi
+    if ! [[ -a ${ARCHIVO_[$i0]} ]] ; then
+      echo "$renglon.MOVER(2): mv $DIR_INTERFACES/${|ARCHIVO_[$i0]} ." >>$shell_.out
+      mv $DIR_INTERFACES/${ARCHIVO_[$i0]} . >>$shell_.out 2>>$shell_.out
+    fi
+    echo "$iRenombrarARCHIVO.$renglon.RENOMBRAR[${ARCHIVO_[$i6]}]: mv ${ARCHIVO_[$i0]} $VAR_" >>$shell_.out
+    mv ${ARCHIVO_[$i0]} $VAR_ >>$shell_.out 2>>$shell_.out
+    echo "$iRenombrarARCHIVO.$renglon.COPIAR[${ARCHIVO_[$i6]}]: cp -p $VAR_ $DIR_INTERFACES/." >>$shell_.out
+    cp -p $VAR_ $DIR_INTERFACES/. >>$shell_.out 2>>$shell_.out
+    ATTACHED_="$ATTACHED_ $VAR_"
+  }
+  echo -n "$ATTACHED_" >> $MARCA_.${PREVALIDADOR_[$indicePreval10]}.attached
+  echo "$iRenombrarARCHIVO.$renglon.ATTACH: [$ATTACHED_]" >>$shell_.out
+  Nfecha="`date '+%d/%m/%Y %H:%M:%S'`"
+}
+validaObjetos()
+{
+  renglon=$1
+  Nfecha="`date '+%d/%m/%Y %H:%M:%S'`"
+  rutina_="validaObjetos"
+  echo "$Nfecha $rutina_ renglon=$renglon" >>$shell_.out
+  OBJECT_[11]=$DIR_PROG/prefijosBanCAAAREMalterno.lst
+  OBJECT_[12]=$DIR_PROG/Prevalidadores.cnf
+  OBJECT_[13]=$DIR_PROG/$PROGRAMA_
+  OBJECT_[14]=
+  OBJECT_[21]=$DIR_PROG/prefijosBanCAAAREMalterno.lst
+  OBJECT_[22]=$DIR_PROG/$PROGRAMA_
+  OBJECT_[23]=$ARCHIVO_CABECERA
+  OBJECT_[24]=$ARCHIVO_CONF_PROC
+  OBJECT_[25]=$ARCHIVO_CNF_0
+  OBJECT_[26]=
+  Nfecha="`date '+%d/%m/%Y %H:%M:%S'`"
+  echo "$Nfecha funcion: validaObjetos en [$shell_]" >>$shell_.out
+  for i in 1 2 3 4 5 6 7 8 9 10
+  {
+    indice=$renglon$i
+    if [[ -z "${OBJECT_[$indice]}" ]] ; then
+      break
+    fi
+    if ! [[ -s "${OBJECT_[$indice]}" ]] ; then
+      result=93
+      Nfecha="`date '+%d/%m/%Y %H:%M:%S'`"
+      echo "$Nfecha $shell_ Error 93.4: No se instalo [${OBJECT_[$indice]}] result=$result" >>$shell_.out
+      msgError_=$msgError_"No se instalo ${OBJECT_[$indice]} "
+      exit 1
+    fi
+    echo "$shell_ : ${OBJECT_[$indice]} Ok." >>$shell_.out
+  }
+  Nfecha="`date '+%d/%m/%Y %H:%M:%S'`"
+}
+validaVariables()
+{
+  Nfecha="`date '+%d/%m/%Y %H:%M:%S'`"
+  rutina_="validaVariables"
+  echo "DIR_INTERFACES=$DIR_INTERFACES" >>$shell_.out
+  DIR_INTERFACES=${DIR_INTERFACES:?No_se_indico_DIR_INTERFACES}
+  Nfecha="`date '+%d/%m/%Y %H:%M:%S'`"
+}
+WaitingFinProcesos()
+{
+  Nfecha="`date '+%d/%m/%Y %H:%M:%S'`"
+  rutina_="WaitingFinProcesos"
+  iCount=0
+  while [[ -n `ps -fea|grep $PROGRAMA_|fgrep -v "$shell_
+grep" 2>>$shell_.out` ]]
+   do
+     (( iCount=iCount+1 ))
+     if [[ $iCount -eq 1 ]] ; then
+       Nfecha="`date '+%d/%m/%Y %H:%M:%S'`"
+       echo -n "$Nfecha waiting $PROGRAMA_(" >>$shell_.out
+     fi
+     echo -n "$iCount." >>$shell_.out
+     sleep 15
+   done
+   if [[ $iCount -ne 0 ]] ; then
+     Nfecha="`date '+%d/%m/%Y %H:%M:%S'`"
+     echo -n ") Fin $Nfecha " >>$shell_.out
+   fi
+  Nfecha="`date '+%d/%m/%Y %H:%M:%S'`"
+}
+echo >> $shell_.out
+Nfecha="`date '+%d/%m/%Y %H:%M:%S'`"
+echo "$Nfecha Inicio $shell_ result=$result" >> $shell_.out
+
+#Paso1: Inicio
+InicioBanCAAAREMalterno
+
+#Paso2: Envio Procesos
+ProcesarBanCAAAREMalterno
+
+Nfecha="`date '+%d/%m/%Y %H:%M:%S'`"
+echo "$Nfecha Fin $shell_ result=$result" >> $shell_.out
+ValidaEstatus
+##FIN DE CODIGO Version: 1.0 Jueves, 23 de Abril de 2009 8:30hrs ***IBM-PRO-CAN-1610 AMX-07-00087-0A***
