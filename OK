@@ -1,155 +1,71 @@
-int enviaMensajePrevalidador(int iNewsockfd,int iPreval,int iNumero, char *cNumero,int iIndAcuse,char *cMsgError)
-{
-  char cBYTE[3]="",
-       cXinvertido[8]="",
-       cXnumero[8]="",
-       pFuncion[]="enviaMensajePrevalidador";
-  int  i=0,
-	   iBytes=2,
-       iLimite=4,
-	   iResult=0,
-       j=0;
+export FEC="`date +%b%d`"
+export HOSTNAME=`hostname`
 
-  fprintf(fptr1,"\nInicia %s(%d,%d,%d ,%s,%d,%s)\n"
-               ,pFuncion,iNewsockfd,iPreval,iNumero,cNumero,iIndAcuse,cMsgError);
-  fflush(fptr1);
-  switch (iPreval) {
-    case 4:
-	  switch (iIndAcuse) {
-        case 2:
-          fprintf(fptr1, "\n Se enviara primer acuse a CINTESIS %d", iNumero);
-          fflush(fptr1);
-          iResult=write(iNewsockfd,cNumero,sizeof(cNumero));
-          fprintf(fptr1, "\n Se envio primer acuse a CINTESIS %d", iNumero);
-          fflush(fptr1);
-          break;
-        default:
-          fprintf(fptr1,"\n [CINTESIS]: Error a enviar <%s>\n", cNumero);
-          fflush(fptr1);
-          iResult=write(iNewsockfd,cNumero,sizeof(cNumero));
-          break;
-      }
-      break;
-    default:
-      sprintf(cXnumero, "%08X", iNumero);
-      fprintf(fptr1,"EL NUMERO[%d] CONVERTIDO A HEXADECIMAL ES[%s]\n",iNumero,cXnumero);
-      fflush(fptr1);
-      cXnumero[8] = 0;
-      j=6;
-      fprintf(fptr1,"BYTE{");
-      for (i=iLimite-1;i>=0;i--)
-      {
-        cBYTE[0]=0;
-        strncpy(cBYTE, cXnumero+j, iBytes);
-        cBYTE[iBytes]=0;
-        fprintf(fptr1,"%d.%d.%s,",i,j,cBYTE);
-  	    fflush(fptr1);
-        strcat(cXinvertido,cBYTE);
-        j-=2;
-      }
-      cXinvertido[8]=0;
-      fprintf(fptr1,"} Convert(%s, 16)",cXinvertido);
-      iResult = Convert(cXinvertido, 16);
-      fprintf(fptr1," iResult=%d\n",iResult);
-      fflush(fptr1);
-      switch (iIndAcuse) {
-        case 0:
-          fprintf(fptr1,"SE ENVIA ERROR <%d> CONVERTIDO EN FORMATO RED <%d>\n", iNumero, iResult);
-          fflush(fptr1);
-          break;
-        case 2:
-          fprintf(fptr1,"SE ENVIA PRIMER ACUSE <%d> CONVERTIDO EN FORMATO RED <%d>\n", iNumero, iResult);
-          fflush(fptr1);
-          break;
-        default:
-          fprintf(fptr1,"SE ENVIA ACUSE CON ERROR <%d> CONVERTIDO EN FORMATO RED <%d>\n", iNumero, iResult);
-          fflush(fptr1);
-       break;
-      }
-      if (sizeof(iResult) > 0) {
-//Envia Mensaje de error a CAAAREM
-	    fprintf(fptr1,"write(%d,%d,%d)",iNewsockfd,iResult,sizeof(iResult));
-      	fflush(fptr1);
-      	iResult = write(iNewsockfd,&iResult,sizeof(iResult));
-		fprintf(fptr1," result=%d\n",iResult);
-      	fflush(fptr1);
-	  }
-      else {
-      	fprintf(fptr1,"[ABSsrvr] Error: No permite escribir en el socket.");
-      	fflush(fptr1);
-      }
-      //if(strcmp(cMsgError,"NUL0"))
-      //{
-        fprintf(fptr1,"ABSsrvr: %s.\n",cMsgError);
-   	    fflush(fptr1);
-      //}
-      break;
-  }
-  iResult = (iResult>0) ? 0 : 1;
-  fprintf(fptr1,"Fin %s result=%d\n",pFuncion,iResult);
-  fflush(fptr1);
-}
+#
+#Crea path de salidas
+#
+
+if [ -z  "$DIR_PROG" ] ; then
+   export DIR_PROG="`pwd`"
+   if [ "`echo "$0"|awk -F\/ '{print NF}'`" -gt "1" ] ; then
+    DIR_PROG="`echo $0|sed \"s/\`echo $0$|awk -F\/ '{print $NF}'\`//g\"`"
+   fi
+   #se le aqadio comparacisn con "././"
+   if [ "$DIR_PROG" = "./" -o "$DIR_PROG" = "././"  ] ; then
+     DIR_PROG="`pwd`"
+   fi
+   export DIR_PROG
+fi
+cd $DIR_PROG
 
 
+if [  -z $NOM_PROG ]; then
+        #
+        # Asigna el nombre del proceso, eliminando el path.
+        #
+        NOM_PROG="`echo $1|awk -F\/ '{print $NF}'`"
+      if [ -z "$NOM_PROG" ] ; then
+          NOM_PROG="$0"
+      fi
+      echo $NOM_PROG
+      echo $nom_prog_res
 
-int leePrevalidadoresCNF(void)
-{
-   int  i=0,
-	    iCountPreval=0,
-	    iResult=1,
-	    iSizeof=200;
-   char cArchivo[]="Prevalidadores.cnf",
-        pArchivo[1024], /*export PREVALIDADOREScnf=Prevalidadores.cnf*/
-        *pDIR_PROG=0,
-	    cMode[]="r",
-        pFuncion[]="leePrevalidadoresCNF",
-        pLinea[1024]="";
-   char slHostName[ 100 + 1 ] = "";
-   FILE *fIN;
+      #read
+      if [ "$NOM_PROG" != "$nom_prog_res" ]; then
+         NOM_PROG="`echo $NOM_PROG|awk -F\/ '{print $NF}'`"
+         export NOM_PROG
 
-   fprintf(fptr1,"\nInicia %s\n",pFuncion);
-   if((pDIR_PROG = getenv("DIR_PROG")) == NULL)
-   {
-       fprintf(fptr1,"\n%s No se puede obtener la variable de ambiente DIR_PROG\n",pFuncion);
-       exit(1);
-   }
-   sprintf(pArchivo,"%s/%s",pDIR_PROG,cArchivo);
-   pArchivo[strlen(pArchivo)]=0;
-   if((fIN = fopen(pArchivo,cMode)) == NULL)
-   {
-      fprintf(fptr1,"%s No se pudo abrir el archivo[%s] mode=%s\n", pFuncion, pArchivo,cMode);
-      return iResult;
-   }
-   fprintf(fptr1,"\n%s Archivo[%s] cMode=%s\n\n", pFuncion, pArchivo,cMode);
-   memset( slHostName, '\0', sizeof( slHostName ) );
-   if ( gethostname( slHostName, 100 ) )
-   {
-    fprintf( fptr1, "%s No se pudo obtener el nombre del host, R=%d\n"
-      , pFuncion, errno );
-    return iResult;
-   }
-   /* Quitarle el dominio al nombre */
-   if ( strchr( slHostName, (int)'.' ) != NULL )
-   {
-    *(strchr( slHostName, (int)'.' )) = '\0';
-   }
-   
-   fprintf(fptr1,"%s gethostname{ %s }\n",pFuncion, slHostName );
-   fprintf( fptr1, "Ok" );
-   for (i=0; i<_MAX_PREVALIDADORES ; i++) tPreval[i][0]=0;
-   i=0;
-   while( (fgets (pLinea, iSizeof, fIN) != NULL) )
-   {
-     if( strstr( pLinea, slHostName ) == NULL ) continue;
-     iCountPreval++;
-     pLinea[iSizeof]=0;
-     fprintf( fptr1, "%s Prevalidador%d: %s\n"
-       , slHostName, iCountPreval, pLinea );
-     strcpy(tPreval[iCountPreval],pLinea);
-   }
-   fclose(fIN);
-   if(iCountPreval) iResult=0;
-   sprintf(tPreval[0],"%d",iCountPreval);
-   fprintf(fptr1,"%s %d-%s registros leidos result=%d\n",pFuncion,iCountPreval,tPreval[0],iResult);
-   return iResult;
-}
+
+          #
+          # Define la variable SALIDAS y crea los directorios necesarios para
+          # crear los archivos de salida de c/u de los procesos.
+          #
+
+          SALIDAS=$DIR_PROG/salidas/$FEC
+          export SALIDAS
+
+          if [ ! -d "$DIR_PROG/salidas" ] ; then
+            mkdir $DIR_PROG/salidas 2>/dev/null
+            chmod 775 $DIR_PROG/salidas
+          fi
+
+          if [ ! -d "$SALIDAS" ] ; then
+             mkdir $SALIDAS 2>/dev/null
+             chmod 775 $SALIDAS
+          fi
+
+          if [ ! -d "$SALIDAS/$NOM_PROG" ] ; then
+              mkdir $SALIDAS/$NOM_PROG 2>/dev/null
+              chmod 775 $SALIDAS/$NOM_PROG
+          else
+              mv "$SALIDAS/$NOM_PROG" $SALIDAS/$NOM_PROG"_""`date '+%H:%M:%S'`"
+              mkdir $SALIDAS/$NOM_PROG 2>/dev/null
+              chmod 775 $SALIDAS/$NOM_PROG
+          fi
+
+      fi
+fi
+
+#
+# Se pasa al directorio de salida del proceso.
+#
