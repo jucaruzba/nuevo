@@ -1,3 +1,152 @@
+int   LlamaCAAAREM (char *EnviaTrama20,  int  EnviaTramanl, char *EnviArchivo,
+                    char *RecibeTrama, short olEsNoPedimento)
+{
+  int    sockfd_CAAAREM;
+  int    hacuse1 = 0, hacuse2 = 0, nacuse1 = 0,  nacuse2 = 0;
+  int   *leidos_CAAAREM;
+  struct sockaddr_in serv_addr_CAAAREM;
+  int    EnviaTramanlhtonl, result;
+  char **pptr;
+  const char *ptr;
+  struct hostent *hptr;
+  char str[INET_ADDRSTRLEN], cadenaEnvio[68];
+  int  EnviosI = 1;
+  char xnumero[8];
+  char xinvertido[8];
+  char byte1[2];
+  char byte2[2];
+  char byte3[2];
+  char byte4[2];
+  char nombreArchivo[13];
+  char *varborradachar, *charEnviosI, *ptrbloque = NULL;
+  char strPreval[4];
+  int  numPreval;
+  char strDireccion[16];
+
+#ifndef _200814200_1
+  const char *cintesis= "180.176.50.244";	/** 04 **/
+  const char *caaarem = "180.176.50.246";	/** 10 **/
+  const char *cnime   = "180.176.50.243";	/** 11 **/
+  const char *courier = "180.176.50.245";	/** 39 **/
+#endif
+#ifdef __AMX_07_00087_0A_1
+	int   iIndAlterno=1;
+#endif
+/*  const char caaarem = "180.176.50.242"; */
+
+#ifdef __DEBUG_1
+  fprintf(fptr1,"LlamaCAAAREM(%s,%d,%s,%s)\n"
+               ,EnviaTrama20,EnviaTramanl,EnviArchivo,RecibeTrama);
+  fflush(fptr1);
+#endif
+
+  memset(cadenaEnvio,'\0',sizeof(cadenaEnvio));
+
+  leidos_CAAAREM = (int *)malloc(1);
+  charEnviosI    = (char *)malloc(3);
+  varborradachar = (char *)malloc(3);
+
+  bzero((char *) &serv_addr_CAAAREM, sizeof(serv_addr_CAAAREM));
+
+  fprintf(fptr1,"\n EnviaTrama20 <%s>,  int  EnviaTramanl <%d>, \n EnviArchivo <%s>,\n   RecibeTrama <%s>",
+                               EnviaTrama20,  EnviaTramanl,
+                               EnviArchivo,   RecibeTrama);
+
+  snprintf(strPreval, 4, "%s", EnviaTrama20 + 17);
+  strPreval[3] = '\0';
+  fprintf(fptr1,"[LlamaCAAAREM] Prevalidador a validar <%s>\n", strPreval);
+  numPreval = atoi((char *) strPreval);
+#ifdef _200814200_1
+  if( !(serv_tcp_caaarem=buscaPrevalidadoresCNF(numPreval,strDireccion)) )
+  {
+    iIndAlterno=1;
+    fprintf(fptr1,"[LlamaCAAAREM] Error 1: No es posible resolver paquetes para el Prevalidador=%d Puerto=%d HOST[%s] Alterno=%d\n"
+                 ,numPreval,serv_tcp_caaarem,strDireccion,iIndAlterno);
+    fflush(fptr1);
+    renombrarArchivoS(EnviaTrama20,fptr1);
+    return 1;
+  }
+  fprintf(fptr1, " SERV_TCP_CAAAREM <%d>\n", serv_tcp_caaarem);
+#else
+  switch(numPreval)
+  {
+	  case 4:		/** CINTESIS **/
+			sprintf(strDireccion, "%s", cintesis);	break;
+	  case 10:		/** CAAAREM  **/
+			sprintf(strDireccion, "%s", caaarem);	break;
+	  case 11:		/**  CNIME   **/
+			sprintf(strDireccion, "%s", cnime);		break;
+	  case 39:		/** COURIER  **/
+			sprintf(strDireccion, "%s", courier);	break;
+	  default:
+  		        fprintf(fptr1,"[Error] No es posible resolver paquetes para el Prevalidador numero <%d>\n", numPreval);
+  }
+#endif
+#ifdef __DEBUG_1
+  fprintf(fptr1,"AMX-07-00087-0A [LlamaCAAAREM] Prevalidador[%d] HOST[%s] Puerto[%d]\n"
+              ,numPreval,strDireccion,serv_tcp_caaarem);
+  fflush(fptr1);
+#endif
+  fprintf(fptr1,"[LlamaCAAAREM] Prevalidador a validar <%d> <%d> <%s>\n"
+               ,numPreval,serv_tcp_caaarem,strDireccion);
+
+  if ( (hptr = gethostbyname(strDireccion)) == NULL)
+    {
+#ifdef __AMX_07_00087_0A_1
+      iIndAlterno=1;
+      fprintf(fptr1,"[LlamaCAAAREM] Error 2: No se puede obtener la direccion del gethostbyname(%s) Puerto[%d] Alterno=%d\n"
+	               ,strDireccion,serv_tcp_caaarem,iIndAlterno);
+	  fflush(fptr1);
+  	  renombrarArchivoS(EnviaTrama20,fptr1);
+	  return 1;
+#else
+      ErrorNoFatal("BanCAAAREM: No se puede obtener la direccion del host SERV_HOST_CAAAREM");
+#endif
+    }
+  else
+    {
+      pptr = hptr->h_addr_list;
+      ptr = inet_ntop(AF_INET, *hptr->h_addr_list, str, sizeof(str));
+
+      serv_addr_CAAAREM.sin_family = AF_INET;
+      serv_addr_CAAAREM.sin_addr.s_addr = inet_addr(ptr);
+    /**  serv_addr_CAAAREM.sin_addr.s_addr = (in_addr_t)*pptr; **/
+      serv_addr_CAAAREM.sin_port = htons(serv_tcp_caaarem);
+    }
+
+  if ((sockfd_CAAAREM = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+  {
+#ifdef __AMX_07_00087_0A_1
+      iIndAlterno=1;
+      fprintf(fptr1,"[LlamaCAAAREM] Error 3: No se puede abrir el socket stream HOST[%s] Puerto[%d] Alterno=%d\n"
+	               ,strDireccion,serv_tcp_caaarem,iIndAlterno);
+	  fflush(fptr1);
+	  renombrarArchivoS(EnviaTrama20,fptr1);
+	  return 1;
+#else
+      ErrorNoFatal("BanCAAAREM: No se puede abrir el socket stream sockfd_CAAAREM");
+#endif
+  }
+
+  if (connect(sockfd_CAAAREM, (struct sockaddr *) &serv_addr_CAAAREM, sizeof(serv_addr_CAAAREM)) < 0)
+  {
+#ifdef __AMX_07_00087_0A_1
+      iIndAlterno=1;
+      fprintf(fptr1,"[LlamaCAAAREM] Error 4: No se puede hacer connect HOST[%s] Puerto[%d] Alterno=%d\n"
+	               ,strDireccion,serv_tcp_caaarem,iIndAlterno);
+	  fflush(fptr1);
+	  renombrarArchivoS(EnviaTrama20,fptr1);
+	  close(sockfd_CAAAREM);
+	  return 1;
+#else
+     fprintf(fptr1,"BanCAAAREM: No se puede hacer connect al host desde sockfd_CAAAREM Prevalidador=%d Puerto=%d-%d HOST[%s]\n"
+               ,numPreval,serv_addr_CAAAREM.sin_port,serv_tcp_caaarem,strDireccion);
+     ErrorNoFatal("BanCAAAREM: No se puede hacer connect al host desde sockfd_CAAAREM \n");
+#endif
+  }
+
+ /** write_data(sockfd_CAAAREM, EnviaTrama20);  **/
+
 #ifdef __AMX_07_00087_0A_1
       if ( (result=write (sockfd_CAAAREM, EnviaTrama20, 20)) < 0 )
       {
@@ -60,35 +209,7 @@
 	return 1;
   }
 #endif
-/**
-  sprintf(xnumero, "%08X", EnviaTramanl);
-  xnumero[8] = '\0';
 
-  fprintf(fptr1,"EL NUMERO %d CONVERTIDO EN HEXADECIMAL ES %s\n", EnviaTramanl, xnumero);
-
-  strncpy(byte1, xnumero, 2);
-  byte1[2] = '\0';
-  fprintf(fptr1,"BYTE1[%s]\n", byte1);
-
-  strncpy(byte2, xnumero +2, 2);
-  byte2[2] = '\0';
-  fprintf(fptr1,"BYTE2[%s]\n", byte2);
-
-  strncpy(byte3, xnumero + 4, 2);
-  byte3[2] = '\0';
-  fprintf(fptr1,"BYTE3[%s]\n", byte3);
-
-  strncpy(byte4, xnumero  + 6 , 2);
-  byte4[2] = '\0';
-  fprintf(fptr1,"BYTE4[%s]\n", byte4);
-
-  sprintf(xinvertido, "%s%s%s%s", byte4, byte3, byte2, byte1);
-  xinvertido[8] = '\0';
-
-  resultado = Convert(xinvertido, 16);
-
-  fprintf(fptr1,"SE ENVIA ENTERO <%d> CONVERTIDO EN FORMATO RED <%d>\n", EnviaTramanl, resultado);
-**/
   fprintf(fptr1,"\n sizeof EnviaTramanlhtonl <%d>  RED <%ld>", EnviaTramanl, sizeof(EnviaTramanlhtonl));
 
 #ifdef __AMX_07_00087_0A_1
@@ -189,16 +310,6 @@
 
 
 
-			/**sprintf(borravarenv, "unset %s", EnviaTrama20);
-			borravarenv[26] = '\0';
-			varborrada = system(borravarenv);
-
-			if ((varborradachar = getenv(EnviaTrama20)) != NULL)
-			{
-				fprintf(fptr1,"\n PRECAUCION: No se puede hacer <%s> , ejecutar manualmente.\n", borravarenv);
-			}
-			*/
-
 		  shutdown(sockfd_CAAAREM, SHUT_WR);
 #ifdef __AMX_07_00087_0A_1
   if ( (result = read(sockfd_CAAAREM, (int *) &nacuse2, sizeof(nacuse2))) == -1)
@@ -216,10 +327,7 @@
 			 fprintf(fptr1,"Error al leer el segundo acuse\n");
 		  else
 		  {
-/**			if(numPreval == 4)
-				hacuse2 = nacuse2;
-			else
-**/
+
 				hacuse2 = ntohl(nacuse2);
 		  }
 #endif
